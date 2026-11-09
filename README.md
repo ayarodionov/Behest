@@ -39,6 +39,24 @@ end
 
 The reviewer reads about 20 lines. The compiler guarantees the rest matches.
 
+### Reading the example
+
+The task in plain English: *"limit each client to 3 requests per second."* That sentence leaves details open, such as what happens to the fourth request and when the count resets. The contract above settles them, line by line:
+
+| Part | What it says |
+| --- | --- |
+| `protocol RateLimit` | The conversation between the two sides. A client sends `{check, id}`; the server must answer `ok` or `{error, rate_limited}`. Any other message or reply is a compile error. |
+| `process RateLimiter ... as server` | A long-running process (a `gen_server` underneath) that plays the server side of that protocol. |
+| `handle check(id)` | The code that runs when a `check` message arrives. The body is the AI's job. |
+| `effects [time]` | The only side effect allowed is reading the clock. Touching ETS, files or the network is a compile error, so a reviewer sees at a glance what the code can do. |
+| `examples (limit: 3, window: 1s)` | Concrete scenarios, run on every build against a virtual clock. At 0 ms client `:a` makes three calls (`x3`) and all succeed. At 10 ms a fourth is **rejected** (not queued or delayed). At 1000 ms a new window has started, so it succeeds again. |
+| `property` | A rule that must hold for *any* client and window, checked on random inputs: the number of accepted calls never exceeds the limit. |
+| `implementation` | Everything below this line is AI-written and can be regenerated freely. It may use a map, ETS or anything else, as long as the contract holds. If it switches to ETS, it must add `ets` to the effects line, which shows up in the diff as a contract change that needs approval. |
+
+Note the split: the examples say *what should happen in specific cases*, the property says *what must always be true*, and the protocol and effects say *what the code may talk to and do*. Together they leave little room for a wrong implementation to pass.
+
+This is the language as designed. The [prototype](prototype/) already runs the examples, properties and effect checks as an Elixir macro library; protocols and the virtual clock come with the real compiler.
+
 ## How it works
 
 The human never writes the implementation. The human and the AI build the contract together, one concrete question at a time:
