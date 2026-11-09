@@ -1,0 +1,42 @@
+# Fixed-window rate limiter.
+# Everything above `implementation` is the human-approved contract.
+# Everything below is AI-written and may be regenerated while the contract holds.
+
+protocol RateLimit
+  client -> server : {check, id: ClientId}
+  server -> client : ok | {error, rate_limited}
+end
+
+process RateLimiter implements RateLimit as server
+  config
+    limit: pos_int
+    window: Duration
+
+  handle check(id)
+    effects [time]
+    examples  (limit: 3, window: 1s)
+      at 0ms    check(:a) x3  => ok, ok, ok
+      at 10ms   check(:a)     => error(rate_limited)
+      at 10ms   check(:b)     => ok
+      at 1000ms check(:a)     => ok            # fixed window resets
+    property
+      forall client, window: accepted(client, window) <= limit
+      forall a != b: calls(a) never change result(b)
+
+implementation
+  state counts: Map(ClientId, {window_start: Time, n: int})
+
+  handle check(id)
+    now = Time.now()
+    start = Time.floor(now, window)
+    case Map.get(counts, id)
+      some({window_start: ^start, n}) when n >= limit ->
+        reply error(rate_limited)
+      some({window_start: ^start, n}) ->
+        counts = Map.put(counts, id, {window_start: start, n: n + 1})
+        reply ok
+      _ ->
+        counts = Map.put(counts, id, {window_start: start, n: 1})
+        reply ok
+    end
+end

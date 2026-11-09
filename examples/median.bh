@@ -1,0 +1,23 @@
+# A pure function: no effects line means no side effects.
+
+fn median(xs: List(Float)) -> Result(Float, Empty)
+  examples
+    [3.0, 1.0, 2.0]       => ok(2.0)
+    [4.0, 1.0, 3.0, 2.0]  => ok(2.5)      # even length: mean of the middle two
+    []                    => error(Empty)
+  property
+    forall xs, p in permutations(xs): median(xs) == median(p)
+
+implementation
+  case List.sort(xs)
+    [] -> error(Empty)
+    sorted ->
+      n = List.length(sorted)
+      mid = n div 2
+      if n rem 2 == 1
+        ok(List.at(sorted, mid))
+      else
+        ok((List.at(sorted, mid - 1) + List.at(sorted, mid)) / 2.0)
+      end
+  end
+end

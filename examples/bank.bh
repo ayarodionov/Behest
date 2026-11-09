@@ -1,0 +1,45 @@
+# A typed protocol and a supervision tree declared as data.
+
+protocol Account
+  client -> server : {deposit, amount: pos_int}
+  server -> client : {ok, balance: int}
+
+  client -> server : {withdraw, amount: pos_int}
+  server -> client : {ok, balance: int} | {error, insufficient_funds}
+
+  client -> server : close
+end
+
+process Ledger implements Account as server
+  handle deposit(amount)
+    examples  (balance: 100)
+      deposit(50)   => ok(balance: 150)
+  handle withdraw(amount)
+    examples  (balance: 100)
+      withdraw(30)  => ok(balance: 70)
+      withdraw(500) => error(insufficient_funds)
+    property
+      forall amount: balance never < 0
+
+implementation
+  state balance: int = 0
+
+  handle deposit(amount)
+    balance = balance + amount
+    reply ok(balance: balance)
+
+  handle withdraw(amount)
+    if amount > balance
+      reply error(insufficient_funds)
+    else
+      balance = balance - amount
+      reply ok(balance: balance)
+    end
+end
+
+supervisor Bank
+  strategy one_for_one, max_restarts 5 per 10s
+  children
+    Ledger          restart permanent
+    RateLimiter     restart permanent, args [limit: 100, window: 1s]
+end
