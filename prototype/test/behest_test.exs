@@ -124,6 +124,57 @@ defmodule BehestTest do
     end
   end
 
+  test "an open item fails the build and lists the question" do
+    error =
+      assert_raise CompileError, fn ->
+        Code.compile_string("""
+        defmodule WithOpen do
+          use Behest
+          defspec median(xs) do
+            open "NaN handling: skip, error, or propagate?"
+            examples do
+              median([1, 2, 3]) == 2
+            end
+            implementation do
+              Enum.at(Enum.sort(xs), div(length(xs), 2))
+            end
+          end
+          defspec mean(xs) do
+            open "empty list: error or 0?"
+            implementation do
+              Enum.sum(xs) / length(xs)
+            end
+          end
+        end
+        """)
+      end
+
+    message = Exception.message(error)
+    assert message =~ "unresolved open items"
+    assert message =~ "median/1"
+    assert message =~ "NaN handling: skip, error, or propagate?"
+    assert message =~ "mean/1"
+    assert message =~ "empty list: error or 0?"
+  end
+
+  test "removing the open item lets the build pass" do
+    assert [{_, _}] =
+             Code.compile_string("""
+             defmodule Answered do
+               use Behest
+               defspec median(xs) do
+                 examples do
+                   median([1, 2, 3]) == 2
+                   median([1.0, :nan]) == :nan_not_supported
+                 end
+                 implementation do
+                   if Enum.any?(xs, &(&1 == :nan)), do: :nan_not_supported, else: Enum.at(Enum.sort(xs), div(length(xs), 2))
+                 end
+               end
+             end
+             """)
+  end
+
   test "a declared effect compiles" do
     assert [{_, _}] =
              Code.compile_string("""

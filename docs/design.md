@@ -71,7 +71,29 @@ Rules:
 - A property's generator seed is printed on failure, so a counterexample can become a new example.
 - The AI may add examples; it may never edit or delete human-approved ones. Approved blocks carry a marker the compiler tracks.
 
-## 4. Effects
+## 4. Open items and contract gaps
+
+The AI must ask when the contract does not say what to do, not guess. Models will often guess unless told otherwise, so Behest enforces this in two ways instead of relying on good behaviour.
+
+**`open`: the human marks what is undecided.**
+
+```
+fn median(xs: List(Float)) -> Result(Float, Empty)
+  open "NaN handling: skip, error, or propagate?"
+  examples
+    [3.0, 1.0, 2.0] => ok(2.0)
+  ...
+```
+
+The build fails while any `open` remains, and lists the questions. The AI cannot silently pick an answer; it brings the question to the human, who answers by adding an example or property and deleting the `open` line. The [prototype](../prototype/) implements this.
+
+**Disagreement check: finding gaps nobody noticed.** A contract can be incomplete in ways its author did not see. To find them, the toolchain asks the AI for two different implementations that both pass the contract, then searches for an input where they disagree (random and property-driven testing). Each disagreeing input is a missing example. The AI shows it with both answers, for example "`gcd(0, 0)`: one returns 0, the other raises. Which is right?", and the human's answer becomes a new approved example. Repeat until the implementations agree everywhere the search reaches.
+
+Limits, stated plainly: the search finds gaps its generators reach, not all of them, and two implementations from the same model can share a blind spot. It narrows the gap between intent and contract; it does not close it.
+
+The rule given to the AI is the same in both cases: if the contract is unclear, ask for another example or property, and never guess.
+
+## 5. Effects
 
 A function's header lists what it may do beyond computing a value. A function with no `effects` line is pure.
 
@@ -94,7 +116,7 @@ end
 
 The compiler checks that a function's effects include those of everything it calls. For a reviewer, one glance answers "can this touch the network?" Pure functions are the easy majority to approve; the effectful ones get the attention.
 
-## 5. Supervision as data
+## 6. Supervision as data
 
 The supervision tree is a declared value, checked at compile time, not code spread across `init/1` callbacks.
 
@@ -110,13 +132,13 @@ end
 
 The compiler checks that every child exists, its args match its `start` signature, and every process that uses a protocol has a peer somewhere in the tree. The same declaration renders as a diagram for review.
 
-## 6. A complete program
+## 7. A complete program
 
 See [examples/rate_limiter.bh](../examples/rate_limiter.bh). Everything above `implementation` is the contract a human approves; everything below is AI-written and may be regenerated freely as long as the contract holds.
 
 If the AI later switches the implementation to ETS for speed, it must add `ets` to the effects line. That shows up in the diff as a contract change that needs approval.
 
-## 7. How to build it
+## 8. How to build it
 
 Compiler pipeline, written in Elixir or Erlang:
 
@@ -139,11 +161,12 @@ Phased plan:
 
 Shortcut for phases 1–2: prototype as an Elixir macro library first (`defspec` with examples and properties) to test the ergonomics before writing a parser.
 
-## 8. Open questions
+## 9. Open questions
 
 - Build on Gleam (fork or compiler plugin) or start fresh?
 - Surface syntax: Elixir-like or ML-like?
 - How far to take session types: two-party only, or multiparty with deadlock checks later?
 - How does the compiler mark examples as human-approved: a signature, a lock file, or git history?
 - Hot code upgrade: how do protocol changes between versions get checked?
+- Disagreement check: how are alternative implementations produced and compared (AI-generated variants, mutating the implementation, or symbolic execution), and how much of the search is affordable on every build?
 - Name: Behest ("at someone's behest") says it: the human asks, the AI builds.

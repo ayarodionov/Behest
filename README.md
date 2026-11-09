@@ -44,6 +44,7 @@ The reviewer reads about 20 lines. The compiler guarantees the rest matches.
 | Feature | What it gives the reviewer |
 | --- | --- |
 | **Inline examples and properties** | Intent as executable syntax; the build fails if they fail |
+| **`open` items** | The AI can't guess: the build fails until the human answers each open question |
 | **Protocols (two-party session types)** | Message mismatches between processes become compile errors |
 | **Effects in signatures** | One glance answers "can this touch the network / ETS / clock?" |
 | **Supervision as data** | The process tree is a checked declaration, not scattered callbacks |

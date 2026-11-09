@@ -65,6 +65,7 @@ defmodule Behest do
       arity: arity,
       line: __CALLER__.line,
       declared: parts.effects,
+      open: parts.open,
       direct: direct,
       local_calls: local_calls,
       examples: length(parts.examples),
@@ -88,7 +89,7 @@ defmodule Behest do
         single -> [single]
       end
 
-    Enum.reduce(statements, %{examples: [], properties: [], effects: [], implementation: nil}, fn
+    Enum.reduce(statements, %{examples: [], properties: [], effects: [], open: [], implementation: nil}, fn
       {:examples, _, [[do: body]]}, acc ->
         exprs =
           case body do
@@ -109,6 +110,9 @@ defmodule Behest do
       {:effects, _, [list]}, acc when is_list(list) ->
         %{acc | effects: acc.effects ++ list}
 
+      {:open, meta, [question]}, acc when is_binary(question) ->
+        %{acc | open: acc.open ++ [%{question: question, line: meta[:line]}]}
+
       {:implementation, _, [[do: body]]}, acc ->
         %{acc | implementation: body}
 
@@ -117,7 +121,7 @@ defmodule Behest do
           line: line_of(other),
           description:
             "unexpected statement in defspec #{name}/#{arity}: #{Macro.to_string(other)}. " <>
-              "Allowed: examples, property, effects, implementation"
+              "Allowed: examples, property, effects, open, implementation"
     end)
   end
 
@@ -201,6 +205,7 @@ defmodule Behest do
     specs = env.module |> Module.get_attribute(:behest_specs) |> Enum.reverse()
     examples = env.module |> Module.get_attribute(:behest_examples) |> Enum.reverse()
     properties = env.module |> Module.get_attribute(:behest_properties) |> Enum.reverse()
+    check_open!(specs, env)
     Behest.Effects.check!(specs, env)
 
     quote do
@@ -209,6 +214,28 @@ defmodule Behest do
       def __behest__(:examples), do: unquote(Macro.escape(examples))
       def __behest__(:properties), do: unquote(Macro.escape(properties))
     end
+  end
+
+  # An `open "question"` marks something the human has not decided. The build
+  # refuses to pass while any remain, so the AI cannot silently pick an answer:
+  # it has to bring the question back to the human.
+  defp check_open!(specs, env) do
+    items = for spec <- specs, item <- spec.open, do: {spec, item}
+
+    if items != [] do
+      lines =
+        Enum.map_join(items, "\n", fn {spec, %{question: q, line: line}} ->
+          "  #{spec.name}/#{spec.arity} (line #{line}): #{inspect(q)}"
+        end)
+
+      raise CompileError,
+        file: env.file,
+        line: items |> hd() |> elem(1) |> Map.fetch!(:line),
+        description:
+          "unresolved open items. Ask the human; answer each with an example or property, then delete its `open` line:\n#{lines}"
+    end
+
+    :ok
   end
 
   @doc false
