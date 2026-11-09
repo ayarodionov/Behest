@@ -1,5 +1,5 @@
 # Disagreement check (scratch file: never commit, never approve).
-# NOT RUN where this template was written (no Julia available): run it first.
+# Run on a Mac by the author's user (Julia available there); the shrinker's pair removal is new and not yet re-run.
 #
 # Put the real implementation and the alternative in scope, then:
 #     julia --project scratch/disagree.jl
@@ -17,13 +17,20 @@ alt_answer(xs)  = try alt_median(copy(xs)) catch e; e end
 same(a, b) = (a isa Exception && b isa Exception && typeof(a) == typeof(b)) || isequal(a, b)
 disagree(xs) = !same(real_answer(xs), alt_answer(xs))
 
-# Simplest failing input: drop elements, then halve and round values, while it still disagrees.
+# Simplest failing input: drop one or two elements, then halve and round values, while it still disagrees.
 function shrink(xs)
     changed = true
     while changed
         changed = false
         for i in eachindex(xs)
             ys = xs[[j for j in eachindex(xs) if j != i]]
+            if disagree(ys); xs = ys; changed = true; break; end
+        end
+        changed && continue
+        # Also try removing two elements: removing one can flip odd/even length and hide a gap.
+        for i in eachindex(xs), j in eachindex(xs)
+            i < j || continue
+            ys = xs[[k for k in eachindex(xs) if k != i && k != j]]
             if disagree(ys); xs = ys; changed = true; break; end
         end
         changed && continue
