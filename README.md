@@ -6,7 +6,7 @@ The name comes from "at someone's behest": the human asks, the AI builds.
 
 **Origin:** I asked Claude (Anthropic's AI) what a language on top of OTP should look like if AI writes most of the code. This design is what it proposed; I'm sharing it to get the community's view. Fittingly, the project itself was made the way Behest proposes: a human asked, the AI built.
 
-> Status: design proposal. No compiler yet. Feedback welcome. See [Discussion](#discussion).
+> Status: design proposal with a runnable [Elixir prototype](prototype/) of the contracts. No compiler yet. Feedback welcome. See [Discussion](#discussion).
 
 ## Why
 
@@ -54,6 +54,7 @@ The reviewer reads about 20 lines. The compiler guarantees the rest matches.
 
 - [Design](docs/design.md): goals, syntax, checks, build plan, open questions
 - [Examples](examples/): sketches in proposed syntax
+- [Prototype](prototype/): inline examples, properties and effect checks as an Elixir macro library you can run today
 
 ## Discussion
 
