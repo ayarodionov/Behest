@@ -10,6 +10,9 @@ The same idea as the [Behest language](../README.md), delivered as Claude skills
 
 Use `behest-contract-first` together with the one for your language.
 
+- **[Walkthrough](WALKTHROUGH.md):** a full session building `median`, with the real output of every command.
+- **[Examples](examples/):** finished Erlang and Elixir projects you can run.
+
 ## Install
 
 Copy the skill folders into your skills directory:
@@ -73,5 +76,6 @@ What has actually been run:
 
 - **Tested:** `check_open.sh`, `approved.sh`, `effects.sh` (including `--declared`) and the edit-blocking hook, on sample projects.
 - **Tested:** the Erlang templates, compiled with `erlc` and run with EUnit and PropEr 1.2. The contract passes on a correct `median`, fails on a wrong one, and the disagreement check finds and shrinks a real counterexample. Not tested: the `rebar3` setup snippet.
-- **Not tested:** the Elixir templates. StreamData could not be fetched where these skills were written, so treat `behest-elixir` templates as a starting point and run them in your project first.
+- **Tested:** the [example projects](examples/): both Erlang ones pass their full `check.sh`; the Elixir one's examples, effect scan and approval checks run and pass.
+- **Not tested:** the Elixir templates and the StreamData properties in `examples/gcd-elixir`. StreamData could not be fetched where these skills were written (Hex was blocked), so treat them as a starting point and run them in your project first.
 - Not tested in a live Claude session: how reliably Claude follows the skill steps. The hook and CI check are what make the key rules mechanical.
