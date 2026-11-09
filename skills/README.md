@@ -31,6 +31,22 @@ You do **not** need the whole Behest repo. The skills are self-contained folders
 
 Install `behest-contract-first` plus the one for your language (or all of them). The `examples/`, `WALKTHROUGH.md`, prototype and language design are not needed.
 
+### Easiest: ask Claude Code to install them
+
+If you use Claude Code, paste a prompt like this into a session (replace the language list with yours, and say "project install" if you want them in the current project instead of for all your projects):
+
+```text
+Install the Behest skills from https://github.com/ayarodionov/Behest for me.
+Copy only skills/behest-contract-first and the language skills I use
+(behest-elixir, behest-erlang, behest-go, behest-rust, behest-python,
+behest-java, behest-julia; pick from these: ELIXIR AND JULIA) into
+~/.claude/skills/. Keep the scripts executable, then check that
+~/.claude/skills/behest-contract-first/SKILL.md exists and tell me what you
+installed.
+```
+
+Claude runs the same steps as Option 1 below and will ask your permission before running commands. Then start a **new** Claude Code session so the skills are picked up, and ask for something the skill covers (see "Check that it worked"). To turn on the edit-blocking hook as well, add: *"Also add the PreToolUse hook from skills/README.md (Enforcement, step 2) to .claude/settings.json."* Read the hook and the scripts first if you want to know what they do; they are short.
+
 ### Option 1: git, downloading only the skills
 
 ```sh
