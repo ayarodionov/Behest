@@ -10,7 +10,7 @@ Finished example projects, each in the state you reach after following the skill
 | [`median-rust`](median-rust/) | Rust: cargo tests and proptest. The random properties missed a float overflow even at 100,000 cases, so it became an explicit boundary example in the contract; the naive implementation then failed it. | `check.sh` passes (cargo 1.97, proptest 1.12) |
 | [`median-python`](median-python/) | Python: pytest, Hypothesis and `mypy --strict`. The contract failed a naive implementation on result type, NaN and float overflow (Hypothesis found the overflow by itself). | `check.sh` passes (Python 3.13, Hypothesis 6.170) |
 | [`median-java`](median-java/) | Java: JUnit 5 with seeded random properties. The contract failed a naive implementation on NaN and float overflow; the random properties missed the overflow, an explicit boundary example caught it. | `check.sh` passes (OpenJDK 21, JUnit 5; run with `javac` and the console jar, not Maven) |
-| [`gcd-elixir`](gcd-elixir/) | Elixir: examples in plain ExUnit and properties in StreamData, as two frozen files. | Examples, effect scan and approval checks run and pass. **Properties file not executed** (StreamData could not be fetched where this was written; syntax checked only). |
+| [`gcd-elixir`](gcd-elixir/) | Elixir: examples in plain ExUnit and properties in StreamData, as two frozen files. | `check.sh` passes on a user's machine (4 properties and 5 tests, with StreamData). Not run where this was written (Hex was blocked there). |
 
 ## Run them
 
