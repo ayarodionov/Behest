@@ -14,7 +14,11 @@ using Random
 real_answer(xs) = try median(copy(xs)) catch e; e end   # a thrown error counts as an answer
 alt_answer(xs)  = try alt_median(copy(xs)) catch e; e end
 
-same(a, b) = (a isa Exception && b isa Exception && typeof(a) == typeof(b)) || isequal(a, b)
+# Equal answers: same exception type, or equal values. `isequal` makes NaN equal to NaN,
+# and the extra `==` makes 0.0 equal to -0.0 (isequal alone would call them different, and
+# the shrinker, which can produce -0.0, would then drift to a signed-zero "disagreement").
+same(a, b) = (a isa Exception && b isa Exception && typeof(a) == typeof(b)) ||
+             isequal(a, b) || (a isa Number && b isa Number && a == b)
 disagree(xs) = !same(real_answer(xs), alt_answer(xs))
 
 # Simplest failing input: drop one or two elements, then halve and round values, while it still disagrees.
