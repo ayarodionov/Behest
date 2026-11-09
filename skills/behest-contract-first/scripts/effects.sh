@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Heuristic effect scan for Elixir, Erlang, Go and Julia source files. A grep, not a proof.
+# Heuristic effect scan for Elixir, Erlang, Go, Julia and Rust source files. A grep, not a proof.
 #
 # What the code may do is declared in a comment (any comment style works):
 #     # behest-effects: none            (Elixir, Julia)
 #     %% behest-effects: time, ets      (Erlang)
-#     // behest-effects: send, time     (Go)
+#     // behest-effects: send, time     (Go, Rust)
 # Effects: send spawn ets io time random state
 #   send   messages, channels, remote calls
 #   spawn  processes, goroutines, tasks, threads
@@ -12,13 +12,13 @@
 #   io     files, console, network, subprocesses
 #   time   clock reads, sleeps, timers
 #   random random numbers
-#   state  global or shared mutable state (Go, Julia)
+#   state  global or shared mutable state (Go, Julia, Rust)
 #
 # Usage: effects.sh --declared CONTRACT_FILE IMPL_FILE...
 #        effects.sh IMPL_FILE...          (each file carries its own declaration)
 #
 # The language is chosen from each implementation file's extension
-# (.ex .exs .erl .hrl | .go | .jl).
+# (.ex .exs .erl .hrl | .go | .jl | .rs).
 # Prefer the first form: the declaration then lives in the human-approved
 # contract file, which the AI cannot edit, not in the code being checked.
 # Exits 1 if a file uses an effect it did not declare, or has no declaration.
@@ -38,6 +38,7 @@ lang_of() {
     *.ex|*.exs|*.erl|*.hrl) echo beam ;;
     *.go)                   echo go ;;
     *.jl)                   echo julia ;;
+    *.rs)                   echo rust ;;
     *)                      echo unknown ;;
   esac
 }
@@ -65,6 +66,13 @@ pattern_for() {
     julia:time)   echo '(^|[^A-Za-z_])(time|time_ns|now|today|sleep)\(|@(time|elapsed|timed)|Timer\(' ;;
     julia:random) echo '(^|[^A-Za-z_])(rand|randn|randperm|randstring|randexp|shuffle|sample)!?\(|Random\.|RandomDevice' ;;
     julia:state)  echo '(^|[[:space:]])global |Ref\(|Ref\{|ENV\[' ;;
+
+    rust:send)    echo '\.(send|try_send|recv|try_recv|recv_timeout)\(|mpsc::|(^|[^A-Za-z_])(sync_)?channel(::<[^>]*>)?\(' ;;
+    rust:spawn)   echo 'thread::(spawn|scope|Builder)|tokio::(spawn|task)|(^|[^A-Za-z_.])spawn(_blocking)?\(|rayon|par_iter|\.spawn\(' ;;
+    rust:io)      echo 'std::(fs|io|net|process|env)|(^|[^A-Za-z_])(print|println|eprint|eprintln|dbg)!|File::|tokio::(fs|io|net)|Command::new|reqwest|::stdin\(|::stdout\(|::stderr\(' ;;
+    rust:time)    echo 'Instant::now|SystemTime::now|(thread|tokio::time)::sleep|tokio::time|\.elapsed\(' ;;
+    rust:random)  echo '(^|[^A-Za-z_])rand::|thread_rng|rand::random|getrandom|fastrand|OsRng' ;;
+    rust:state)   echo 'static mut|Mutex|RwLock|Atomic[A-Z]|RefCell|OnceLock|OnceCell|LazyLock|lazy_static|thread_local!|Arc<' ;;
   esac
 }
 
@@ -92,7 +100,7 @@ for f in "$@"; do
 
   lang="$(lang_of "$f")"
   if [ "$lang" = unknown ]; then
-    echo "$f: unknown language (supported: .ex .exs .erl .hrl .go .jl)" >&2
+    echo "$f: unknown language (supported: .ex .exs .erl .hrl .go .jl .rs)" >&2
     status=1
     continue
   fi
