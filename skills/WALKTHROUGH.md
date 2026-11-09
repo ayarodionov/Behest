@@ -219,7 +219,7 @@ The workflow is identical; only the commands and files change.
 | Effect scan | `effects.sh --declared <contract> src/x.erl` | `effects.sh --declared <contract> lib/x.ex` |
 | Disagreement check | `templates/disagree_tests.erl` | `templates/disagree_test.exs` |
 
-See [`examples/gcd-elixir`](examples/gcd-elixir/). Its `check.sh`, including the StreamData properties, passes (run on a user's machine). The two Elixir templates in `behest-elixir/templates/` were not run themselves; run them in your project before relying on them.
+See [`examples/gcd-elixir`](examples/gcd-elixir/). Its `check.sh`, including the StreamData properties, passes (run on a user's machine). The two Elixir templates in `behest-elixir/templates/` also ran on a user's machine and work.
 
 ## Other languages
 
