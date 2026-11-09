@@ -221,6 +221,10 @@ The workflow is identical; only the commands and files change.
 
 See [`examples/gcd-elixir`](examples/gcd-elixir/). Its examples file and effect scan were run; its StreamData properties were not, so run them in your project before relying on that file.
 
+## Other languages
+
+The same loop works in Go and Julia; see [`behest-go`](behest-go/SKILL.md) and [`behest-julia`](behest-julia/SKILL.md). [`examples/median-go`](examples/median-go/) is the same `median` task in Go. Building it, the contract caught a real bug in the first implementation: the even-length mean `(a+b)/2` overflowed to Inf for huge floats, so `TestBetweenMinAndMax` failed (random counterexample, values around 1e308). Claude fixed the implementation, not the contract. The same run also exposed a mistake in the contract's own helper (`nil` and an empty slice are not `reflect.DeepEqual`), which was fixed before approval. Go's fuzzer shrinks disagreements automatically, so the human sees a small input such as `[0 -1]`.
+
 ## What this walkthrough does not show
 
 - **A live Claude session.** The scripts, tests and counterexamples are real; I did not record Claude following the skill unprompted. How reliably it asks instead of guessing depends on the model and the prompt, which is why the hook, `check_open.sh` and a CI `approved.sh check` exist.

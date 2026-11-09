@@ -1,0 +1,12 @@
+package median
+
+import "sort"
+
+// Alternative: lower middle for even lengths (the other plausible reading).
+func altMedian(xs []float64) (float64, error) {
+	if len(xs) == 0 {
+		return 0, ErrEmpty
+	}
+	sort.Float64s(xs)
+	return xs[(len(xs)-1)/2], nil
+}
