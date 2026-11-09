@@ -89,4 +89,4 @@ Please open an issue or join the thread on the Erlang Forums or Elixir Forum.
 
 ## License
 
-See [LICENSE](LICENSE).
+[MIT](LICENSE).
