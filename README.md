@@ -39,6 +39,24 @@ end
 
 The reviewer reads about 20 lines. The compiler guarantees the rest matches.
 
+## How it works
+
+The human never writes the implementation. The human and the AI build the contract together, one concrete question at a time:
+
+1. **The human writes a request and a first contract**, a few examples, and marks anything they know is undecided with `open "empty list: error, or some default?"`.
+2. **The build refuses to pass while any `open` remains.** The AI can't guess; it has to ask. The human answers with an example (`median([]) == {:error, :empty}`) and deletes the `open` line.
+3. **The check finds gaps the human didn't know about.** The AI writes two different implementations that both pass the contract; if they disagree on some input (say `median([1, 0])` gives 0 in one and 0.5 in the other), that input is a missing example. The AI shows both answers, and the human picks the right one.
+4. **Every answer becomes a permanent, executable example or property.** The AI may regenerate the implementation at any time, but it can never break the contract.
+
+People are bad at writing complete specs but good at judging a concrete case, so the human only ever answers "which of these is right?".
+
+| Step | Status |
+| --- | --- |
+| `open` items, examples and properties failing the build | Works in the [prototype](prototype/) |
+| Disagreement check between two implementations | Design only; see the [design](docs/design.md) |
+
+See the [walkthrough](docs/walkthrough.md) for a full worked example with real output.
+
 ## Core features
 
 | Feature | What it gives the reviewer |
