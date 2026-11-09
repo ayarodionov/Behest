@@ -14,8 +14,16 @@ defmodule Scratch.DisagreeTest do
     def median(xs), do: {:ok, xs |> Enum.sort() |> Enum.at(div(length(xs) - 1, 2))}
   end
 
+  # The input is built from pairs plus at most one extra element. A plain
+  # list_of(integer()) shrinks one element at a time, and removing one element
+  # flips odd/even length and hides a disagreement, so the shrunk case stays
+  # large. Shrinking pairs keeps the length parity, so it reaches e.g. [0, 1].
+  # Adapt the generator to the shape of your own function's input.
   property "the two implementations agree" do
-    check all xs <- list_of(integer()), max_runs: 1000 do
+    check all pairs <- list_of({integer(), integer()}),
+              extra <- one_of([constant(nil), integer()]),
+              max_runs: 1000 do
+      xs = Enum.flat_map(pairs, fn {a, b} -> [a, b] end) ++ if(extra == nil, do: [], else: [extra])
       assert Median.median(xs) == Alt.median(xs)
     end
   end
