@@ -53,6 +53,7 @@ The reviewer reads about 20 lines. The compiler guarantees the rest matches.
 
 ## Documents
 
+- [Walkthrough](docs/walkthrough.md): a worked example of the human-AI loop, from request to approved contract
 - [Design](docs/design.md): goals, syntax, checks, build plan, open questions
 - [Examples](examples/): sketches in proposed syntax
 - [Prototype](prototype/): inline examples, properties and effect checks as an Elixir macro library you can run today

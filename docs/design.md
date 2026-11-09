@@ -91,6 +91,8 @@ The build fails while any `open` remains, and lists the questions. The AI cannot
 
 Limits, stated plainly: the search finds gaps its generators reach, not all of them, and two implementations from the same model can share a blind spot. It narrows the gap between intent and contract; it does not close it.
 
+A full worked example of both mechanisms is in the [walkthrough](walkthrough.md).
+
 The rule given to the AI is the same in both cases: if the contract is unclear, ask for another example or property, and never guess.
 
 ## 5. Effects
