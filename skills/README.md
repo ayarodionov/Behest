@@ -33,14 +33,13 @@ Install `behest-contract-first` plus the one for your language (or all of them).
 
 ### Easiest: ask Claude Code to install them
 
-If you use Claude Code, paste a prompt like this into a session (replace the language list with yours, and say "project install" if you want them in the current project instead of for all your projects):
+If you use Claude Code, paste a prompt like this into a session (replace `<LANGUAGES>` with yours, from `elixir`, `erlang`, `go`, `rust`, `python`, `java`, `julia`, and say "project install" if you want them in the current project instead of for all your projects):
 
 ```text
 Install the Behest skills from https://github.com/ayarodionov/Behest for me.
-Copy only skills/behest-contract-first and the language skills I use
-(behest-elixir, behest-erlang, behest-go, behest-rust, behest-python,
-behest-java, behest-julia; pick from these: ELIXIR AND JULIA) into
-~/.claude/skills/. Keep the scripts executable, then check that
+Copy only skills/behest-contract-first and the skills for these languages:
+<LANGUAGES, for example: elixir, erlang, julia> into ~/.claude/skills/.
+Keep the scripts executable, then check that
 ~/.claude/skills/behest-contract-first/SKILL.md exists and tell me what you
 installed.
 ```
