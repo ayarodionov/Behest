@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Heuristic effect scan for Elixir, Erlang, Go, Julia and Rust source files. A grep, not a proof.
+# Heuristic effect scan for Elixir, Erlang, Go, Julia, Rust and Python source files. A grep, not a proof.
 #
 # What the code may do is declared in a comment (any comment style works):
-#     # behest-effects: none            (Elixir, Julia)
+#     # behest-effects: none            (Elixir, Julia, Python)
 #     %% behest-effects: time, ets      (Erlang)
 #     // behest-effects: send, time     (Go, Rust)
 # Effects: send spawn ets io time random state
@@ -12,13 +12,13 @@
 #   io     files, console, network, subprocesses
 #   time   clock reads, sleeps, timers
 #   random random numbers
-#   state  global or shared mutable state (Go, Julia, Rust)
+#   state  global or shared mutable state (Go, Julia, Rust, Python)
 #
 # Usage: effects.sh --declared CONTRACT_FILE IMPL_FILE...
 #        effects.sh IMPL_FILE...          (each file carries its own declaration)
 #
 # The language is chosen from each implementation file's extension
-# (.ex .exs .erl .hrl | .go | .jl | .rs).
+# (.ex .exs .erl .hrl | .go | .jl | .rs | .py).
 # Prefer the first form: the declaration then lives in the human-approved
 # contract file, which the AI cannot edit, not in the code being checked.
 # Exits 1 if a file uses an effect it did not declare, or has no declaration.
@@ -39,6 +39,7 @@ lang_of() {
     *.go)                   echo go ;;
     *.jl)                   echo julia ;;
     *.rs)                   echo rust ;;
+    *.py)                   echo python ;;
     *)                      echo unknown ;;
   esac
 }
@@ -72,6 +73,13 @@ pattern_for() {
     rust:io)      echo 'std::(fs|io|net|process|env)|(^|[^A-Za-z_])(print|println|eprint|eprintln|dbg)!|File::|tokio::(fs|io|net)|Command::new|reqwest|::stdin\(|::stdout\(|::stderr\(' ;;
     rust:time)    echo 'Instant::now|SystemTime::now|(thread|tokio::time)::sleep|tokio::time|\.elapsed\(' ;;
     rust:random)  echo '(^|[^A-Za-z_])rand::|thread_rng|rand::random|getrandom|fastrand|OsRng' ;;
+    python:send)   echo '(^|[^A-Za-z_.])(queue|socket)\.|(^|[^A-Za-z_])(Queue|SimpleQueue|Pipe)\(|\.(send|sendall|recv|put_nowait|get_nowait)\(' ;;
+    python:spawn)  echo '(^|[^A-Za-z_.])(threading|multiprocessing|subprocess)\.|(^|[^A-Za-z_])(Thread|Process|ThreadPoolExecutor|ProcessPoolExecutor)\(|concurrent\.futures|asyncio\.(create_task|run|gather|ensure_future)|os\.(fork|system|popen)' ;;
+    python:io)     echo '(^|[^A-Za-z_.])(print|open|input)\(|(^|[^A-Za-z_.])(os|sys|shutil|pathlib|socket|requests|urllib|http|logging|tempfile|glob|subprocess)\.|(^|[^A-Za-z_])Path\(|\.(read_text|write_text|read_bytes|write_bytes)\(' ;;
+    python:time)   echo '(^|[^A-Za-z_.])time\.(time|sleep|monotonic|perf_counter|process_time)|datetime\.(now|utcnow|today)|date\.today|asyncio\.sleep' ;;
+    python:random) echo '(^|[^A-Za-z_.])(random|secrets)\.|(np|numpy)\.random|uuid\.uuid[14]|import (random|secrets)' ;;
+    python:state)  echo '(^|[[:space:]])global |lru_cache|functools\.cache|os\.environ|^[A-Za-z_][A-Za-z_0-9]* *(:[^=]*)?= *(\[\]|\{\}|dict\(\)|list\(\)|set\(\))|def [A-Za-z_0-9]+\(.*= *(\[\]|\{\})[,)]' ;;
+
     rust:state)   echo 'static mut|Mutex|RwLock|Atomic[A-Z]|RefCell|OnceLock|OnceCell|LazyLock|lazy_static|thread_local!|Arc<' ;;
   esac
 }
@@ -100,7 +108,7 @@ for f in "$@"; do
 
   lang="$(lang_of "$f")"
   if [ "$lang" = unknown ]; then
-    echo "$f: unknown language (supported: .ex .exs .erl .hrl .go .jl .rs)" >&2
+    echo "$f: unknown language (supported: .ex .exs .erl .hrl .go .jl .rs .py)" >&2
     status=1
     continue
   fi
