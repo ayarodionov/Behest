@@ -93,6 +93,7 @@ See the [walkthrough](docs/walkthrough.md) for a full worked example with real o
 - [Design](docs/design.md): goals, syntax, checks, build plan, open questions
 - [Examples](examples/): sketches in proposed syntax
 - [Prototype](prototype/): inline examples, properties and effect checks as an Elixir macro library you can run today
+- [Skills](skills/): the same workflow as Claude skills for ordinary Elixir and Erlang projects, with scripts and a hook that enforce it, no new language needed
 
 ## Discussion
 
