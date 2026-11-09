@@ -1,6 +1,6 @@
 ---
 name: behest-python
-description: Python specifics for the behest-contract-first workflow: pytest and Hypothesis contract files, effect declarations, a Hypothesis-based disagreement check, mypy in the check chain, and the questions that are usually open in Python code. Use together with behest-contract-first in a Python project.
+description: "Python specifics for the behest-contract-first workflow: pytest and Hypothesis contract files, effect declarations, a Hypothesis-based disagreement check, mypy in the check chain, and the questions that are usually open in Python code. Use together with behest-contract-first in a Python project."
 ---
 
 # Behest for Python

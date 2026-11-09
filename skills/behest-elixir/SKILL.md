@@ -1,6 +1,6 @@
 ---
 name: behest-elixir
-description: Elixir specifics for the behest-contract-first workflow: ExUnit and StreamData contract files, effect declarations, and a disagreement-test template. Use together with behest-contract-first when working in an Elixir or Mix project.
+description: "Elixir specifics for the behest-contract-first workflow: ExUnit and StreamData contract files, effect declarations, and a disagreement-test template. Use together with behest-contract-first when working in an Elixir or Mix project."
 ---
 
 # Behest for Elixir

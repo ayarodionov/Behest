@@ -1,6 +1,6 @@
 ---
 name: behest-go
-description: Go specifics for the behest-contract-first workflow: contract files using only the standard library (testing, testing/quick), effect declarations, a fuzz-based disagreement check, and the questions that are usually open in Go code. Use together with behest-contract-first in a Go module.
+description: "Go specifics for the behest-contract-first workflow: contract files using only the standard library (testing, testing/quick), effect declarations, a fuzz-based disagreement check, and the questions that are usually open in Go code. Use together with behest-contract-first in a Go module."
 ---
 
 # Behest for Go

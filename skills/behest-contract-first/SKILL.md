@@ -1,6 +1,6 @@
 ---
 name: behest-contract-first
-description: Contract-first workflow for Elixir, Erlang, Go, Rust, Python or Julia code that a human will review. Use when asked to implement a function or module whose behavior could be read more than one way, or when the user mentions Behest, contract-first, examples-first, or "ask before guessing". Writes examples and properties first, asks about every unclear case, gets approval, then implements.
+description: "Contract-first workflow for Elixir, Erlang, Go, Rust, Python or Julia code that a human will review. Use when asked to implement a function or module whose behavior could be read more than one way, or when the user mentions Behest, contract-first, examples-first, or \"ask before guessing\". Writes examples and properties first, asks about every unclear case, gets approval, then implements."
 ---
 
 # Behest contract-first workflow

@@ -1,6 +1,6 @@
 ---
 name: behest-rust
-description: Rust specifics for the behest-contract-first workflow: cargo integration-test contract files with proptest properties, effect declarations, a proptest-based disagreement check, and the questions that are usually open in Rust code. Use together with behest-contract-first in a Cargo project.
+description: "Rust specifics for the behest-contract-first workflow: cargo integration-test contract files with proptest properties, effect declarations, a proptest-based disagreement check, and the questions that are usually open in Rust code. Use together with behest-contract-first in a Cargo project."
 ---
 
 # Behest for Rust

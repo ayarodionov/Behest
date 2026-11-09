@@ -1,6 +1,6 @@
 ---
 name: behest-erlang
-description: Erlang specifics for the behest-contract-first workflow: EUnit and PropEr contract files, effect declarations, and a disagreement-test template. Use together with behest-contract-first when working in an Erlang or rebar3 project.
+description: "Erlang specifics for the behest-contract-first workflow: EUnit and PropEr contract files, effect declarations, and a disagreement-test template. Use together with behest-contract-first when working in an Erlang or rebar3 project."
 ---
 
 # Behest for Erlang

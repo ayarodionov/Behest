@@ -1,6 +1,6 @@
 ---
 name: behest-julia
-description: Julia specifics for the behest-contract-first workflow: contract files using the Test standard library, a random-input property loop, effect declarations, a disagreement-check template with simple shrinking, and the questions that are usually open in Julia code. Use together with behest-contract-first in a Julia package.
+description: "Julia specifics for the behest-contract-first workflow: contract files using the Test standard library, a random-input property loop, effect declarations, a disagreement-check template with simple shrinking, and the questions that are usually open in Julia code. Use together with behest-contract-first in a Julia package."
 ---
 
 # Behest for Julia
