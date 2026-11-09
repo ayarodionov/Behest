@@ -56,7 +56,7 @@ cd prototype
 mix test
 ```
 
-Examples: [`examples/stats.ex`](examples/stats.ex), [`examples/rate_limit.ex`](examples/rate_limit.ex).
+Examples: [`examples/gcd.ex`](examples/gcd.ex) (the smallest complete one: edge-case examples plus properties that define "greatest common divisor"), [`examples/stats.ex`](examples/stats.ex), [`examples/rate_limit.ex`](examples/rate_limit.ex).
 
 ## Contract blocks
 

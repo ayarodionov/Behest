@@ -1,11 +1,54 @@
 defmodule BehestTest do
   use ExUnit.Case, async: false
 
-  alias Behest.Examples.{RateLimit, Stats}
+  alias Behest.Examples.{Gcd, RateLimit, Stats}
 
   test "example modules compile and work" do
     assert Stats.median([5, 1, 3]) == {:ok, 3}
     assert {:ok, _} = RateLimit.check_now(%{}, :a, 3, 1000)
+    assert Gcd.gcd(48, 36) == 12
+  end
+
+  test "a plausible but wrong gcd is caught by the contract" do
+    # returns the smaller number: right for gcd(6, 12), wrong in general
+    assert_raise CompileError, ~r/example failed for gcd\/2/, fn ->
+      Code.compile_string("""
+      defmodule WrongGcd do
+        use Behest
+        defspec gcd(a, b) do
+          examples do
+            gcd(6, 12) == 6
+            gcd(12, 18) == 6
+          end
+          implementation do
+            min(abs(a), abs(b))
+          end
+        end
+      end
+      """)
+    end
+  end
+
+  test "properties alone catch a wrong gcd when the examples miss it" do
+    assert_raise CompileError, ~r/property "divides both numbers" failed.*counterexample/s, fn ->
+      Code.compile_string("""
+      defmodule WrongGcd2 do
+        use Behest
+        defspec gcd(a, b) do
+          examples do
+            gcd(6, 12) == 6
+          end
+          property "divides both numbers", a: positive_integer(), b: positive_integer() do
+            g = gcd(a, b)
+            rem(a, g) == 0 and rem(b, g) == 0
+          end
+          implementation do
+            min(a, b)
+          end
+        end
+      end
+      """)
+    end
   end
 
   test "a wrong example fails the build" do
