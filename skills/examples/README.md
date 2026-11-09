@@ -9,6 +9,7 @@ Finished example projects, each in the state you reach after following the skill
 | [`median-go`](median-go/) | Go, standard library only (`testing/quick`, `-race`). The contract caught a real overflow in the first implementation: `(a+b)/2` gives Inf for huge floats. | `check.sh` passes (Go 1.24) |
 | [`median-rust`](median-rust/) | Rust: cargo tests and proptest. The random properties missed a float overflow even at 100,000 cases, so it became an explicit boundary example in the contract; the naive implementation then failed it. | `check.sh` passes (cargo 1.97, proptest 1.12) |
 | [`median-python`](median-python/) | Python: pytest, Hypothesis and `mypy --strict`. The contract failed a naive implementation on result type, NaN and float overflow (Hypothesis found the overflow by itself). | `check.sh` passes (Python 3.13, Hypothesis 6.170) |
+| [`median-java`](median-java/) | Java: JUnit 5 with seeded random properties. The contract failed a naive implementation on NaN and float overflow; the random properties missed the overflow, an explicit boundary example caught it. | `check.sh` passes (OpenJDK 21, JUnit 5; run with `javac` and the console jar, not Maven) |
 | [`gcd-elixir`](gcd-elixir/) | Elixir: examples in plain ExUnit and properties in StreamData, as two frozen files. | Examples, effect scan and approval checks run and pass. **Properties file not executed** (StreamData could not be fetched where this was written; syntax checked only). |
 
 ## Run them
@@ -19,6 +20,7 @@ cd skills/examples/rate-limiter-erlang && ./check.sh
 cd skills/examples/median-go && ./check.sh             # needs Go 1.21 or newer
 cd skills/examples/median-rust && ./check.sh           # needs cargo and crates.io
 cd skills/examples/median-python && ./check.sh         # needs: pip install pytest hypothesis mypy
+cd skills/examples/median-java && ./check.sh           # needs a JDK and: apt install junit5 (or set JUNIT_CONSOLE)
 cd skills/examples/gcd-elixir && ./check.sh           # needs Elixir, Mix and access to Hex
 ```
 

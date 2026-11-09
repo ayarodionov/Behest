@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Heuristic effect scan for Elixir, Erlang, Go, Julia, Rust and Python source files. A grep, not a proof.
+# Heuristic effect scan for Elixir, Erlang, Go, Julia, Rust, Python and Java source files. A grep, not a proof.
 #
 # What the code may do is declared in a comment (any comment style works):
 #     # behest-effects: none            (Elixir, Julia, Python)
 #     %% behest-effects: time, ets      (Erlang)
-#     // behest-effects: send, time     (Go, Rust)
+#     // behest-effects: send, time     (Go, Rust, Java)
 # Effects: send spawn ets io time random state
 #   send   messages, channels, remote calls
 #   spawn  processes, goroutines, tasks, threads
@@ -12,13 +12,13 @@
 #   io     files, console, network, subprocesses
 #   time   clock reads, sleeps, timers
 #   random random numbers
-#   state  global or shared mutable state (Go, Julia, Rust, Python)
+#   state  global or shared mutable state (Go, Julia, Rust, Python, Java)
 #
 # Usage: effects.sh --declared CONTRACT_FILE IMPL_FILE...
 #        effects.sh IMPL_FILE...          (each file carries its own declaration)
 #
 # The language is chosen from each implementation file's extension
-# (.ex .exs .erl .hrl | .go | .jl | .rs | .py).
+# (.ex .exs .erl .hrl | .go | .jl | .rs | .py | .java).
 # Prefer the first form: the declaration then lives in the human-approved
 # contract file, which the AI cannot edit, not in the code being checked.
 # Exits 1 if a file uses an effect it did not declare, or has no declaration.
@@ -40,6 +40,7 @@ lang_of() {
     *.jl)                   echo julia ;;
     *.rs)                   echo rust ;;
     *.py)                   echo python ;;
+    *.java)                 echo java ;;
     *)                      echo unknown ;;
   esac
 }
@@ -80,6 +81,13 @@ pattern_for() {
     python:random) echo '(^|[^A-Za-z_.])(random|secrets)\.|(np|numpy)\.random|uuid\.uuid[14]|import (random|secrets)' ;;
     python:state)  echo '(^|[[:space:]])global |lru_cache|functools\.cache|os\.environ|^[A-Za-z_][A-Za-z_0-9]* *(:[^=]*)?= *(\[\]|\{\}|dict\(\)|list\(\)|set\(\))|def [A-Za-z_0-9]+\(.*= *(\[\]|\{\})[,)]' ;;
 
+    java:send)    echo 'BlockingQueue|ConcurrentLinkedQueue|SynchronousQueue|Exchanger|Piped(Input|Output)Stream|(^|[^A-Za-z_])(Server)?Socket\(|\.(sendMessage|publish)\(' ;;
+    java:spawn)   echo 'new Thread\(|Thread\.(start|ofVirtual|ofPlatform)|Executor|CompletableFuture\.(supplyAsync|runAsync)|parallelStream|ForkJoin|ProcessBuilder|Runtime\.getRuntime' ;;
+    java:io)      echo 'System\.(out|err|in)\b|import java\.(io|nio|net)|java\.(io|nio\.file|net)\.|(^|[^A-Za-z_])(Files|Paths)\.|Path\.of|new (File|FileReader|FileWriter|Scanner)\(|HttpClient|System\.console' ;;
+    java:time)    echo 'System\.(currentTimeMillis|nanoTime)|(Instant|LocalDate|LocalDateTime|LocalTime|ZonedDateTime|OffsetDateTime)\.now|new Date\(\)|Thread\.sleep|TimeUnit\.[A-Z]+\.sleep|Clock\.system|Calendar\.getInstance' ;;
+    java:random)  echo 'Math\.random|new (Secure)?Random\(|ThreadLocalRandom|SecureRandom|UUID\.randomUUID|RandomGenerator' ;;
+    java:state)   echo '(^|[[:space:]])static [^(=;]*[]A-Za-z_>] +[A-Za-z_][A-Za-z_0-9]* *(=|;)|Atomic(Integer|Long|Boolean|Reference)|ConcurrentHashMap|synchronized|volatile|ThreadLocal' ;;
+
     rust:state)   echo 'static mut|Mutex|RwLock|Atomic[A-Z]|RefCell|OnceLock|OnceCell|LazyLock|lazy_static|thread_local!|Arc<' ;;
   esac
 }
@@ -88,6 +96,7 @@ pattern_for() {
 ignore_for() {
   case "$1:$2" in
     go:state) echo 'errors\.New|fmt\.Errorf' ;;   # sentinel errors are fine
+    java:state) echo 'static final [^=]*(String|int|long|double|boolean|char|Pattern|Logger) ' ;;   # constants
   esac
 }
 
@@ -108,7 +117,7 @@ for f in "$@"; do
 
   lang="$(lang_of "$f")"
   if [ "$lang" = unknown ]; then
-    echo "$f: unknown language (supported: .ex .exs .erl .hrl .go .jl .rs .py)" >&2
+    echo "$f: unknown language (supported: .ex .exs .erl .hrl .go .jl .rs .py .java)" >&2
     status=1
     continue
   fi
