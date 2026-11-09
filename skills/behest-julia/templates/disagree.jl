@@ -11,11 +11,11 @@ using Random
 # include("../src/Median.jl"); using .Median
 # include("alt_median.jl")                 # defines alt_median(xs); must pass the contract first
 
-real(xs) = try median(copy(xs)) catch e; e end   # a thrown error counts as an answer
-alt(xs)  = try alt_median(copy(xs)) catch e; e end
+real_answer(xs) = try median(copy(xs)) catch e; e end   # a thrown error counts as an answer
+alt_answer(xs)  = try alt_median(copy(xs)) catch e; e end
 
 same(a, b) = (a isa Exception && b isa Exception && typeof(a) == typeof(b)) || isequal(a, b)
-disagree(xs) = !same(real(xs), alt(xs))
+disagree(xs) = !same(real_answer(xs), alt_answer(xs))
 
 # Simplest failing input: drop elements, then halve and round values, while it still disagrees.
 function shrink(xs)
@@ -39,13 +39,13 @@ function shrink(xs)
     return xs
 end
 
-function run(n = 1000; seed = 1)
+function main(n = 1000; seed = 1)
     rng = MersenneTwister(seed)
     for _ in 1:n
         xs = rand(rng, -5.0:1.0:5.0, rand(rng, 0:8))      # small values: ties and zeros show up
         if disagree(xs)
             s = shrink(xs)
-            println("DISAGREE on ", s, "\n  real = ", real(s), "\n  alt  = ", alt(s))
+            println("DISAGREE on ", s, "\n  real = ", real_answer(s), "\n  alt  = ", alt_answer(s))
             return s
         end
     end
@@ -53,4 +53,4 @@ function run(n = 1000; seed = 1)
     return nothing
 end
 
-run()
+main()
