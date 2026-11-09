@@ -4,6 +4,8 @@
 
 The name comes from "at someone's behest": the human asks, the AI builds.
 
+**Origin:** I asked Claude (Anthropic's AI) what a language on top of OTP should look like if AI writes most of the code. This design is what it proposed; I'm sharing it to get the community's view. Fittingly, the project itself was made the way Behest proposes: a human asked, the AI built.
+
 > Status: design proposal. No compiler yet. Feedback welcome. See [Discussion](#discussion).
 
 ## Why
