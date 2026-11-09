@@ -53,7 +53,6 @@ The reviewer reads about 20 lines. The compiler guarantees the rest matches.
 ## Documents
 
 - [Design](docs/design.md): goals, syntax, checks, build plan, open questions
-- [Example-first prompting](docs/example-first-prompting.md): the working method that motivated the language
 - [Examples](examples/): sketches in proposed syntax
 
 ## Discussion
