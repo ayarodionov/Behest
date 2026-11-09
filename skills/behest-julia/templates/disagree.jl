@@ -1,5 +1,5 @@
 # Disagreement check (scratch file: never commit, never approve).
-# Run on a Mac by the author's user (Julia available there); the shrinker's pair removal is new and not yet re-run.
+# Run on a user's machine: finds and shrinks a real disagreement (mean vs lower middle value) to two elements.
 #
 # Put the real implementation and the alternative in scope, then:
 #     julia --project scratch/disagree.jl

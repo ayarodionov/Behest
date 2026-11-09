@@ -7,7 +7,7 @@ description: "Julia specifics for the behest-contract-first workflow: contract f
 
 Follow `behest-contract-first` for the workflow. This skill covers the Julia details. The templates use only the standard libraries `Test` and `Random`, so nothing needs installing. (Supposition.jl is a good property-testing package if the project already uses it; it shrinks automatically.)
 
-**Status:** the contract template and the disagreement template were run on a user's machine and work (contract: 6 examples, the empty-input test and 3000 property checks pass; disagreement: found and printed a lower-median disagreement). Not yet re-run: the shrinker's pair removal, added after the first run stopped at a four-element input instead of the minimal two. The effect scan for `.jl` files was tested here. Not tested: a full `Pkg.test()` setup.
+**Status:** the contract template and the disagreement template were run on a user's machine and work (contract: 6 examples, the empty-input test and 3000 property checks pass; disagreement: found and printed a lower-median disagreement). Two fixes came out of those runs: the shrinker also removes pairs (it first stopped at a four-element input, because removing one element flips odd/even length), and `0.0` and `-0.0` compare equal (otherwise the shrinker drifted to a signed-zero difference); after both, it shrank to the minimal two-element case. The effect scan for `.jl` files was tested here. Not tested: a full `Pkg.test()` setup.
 
 ## Contract file
 
