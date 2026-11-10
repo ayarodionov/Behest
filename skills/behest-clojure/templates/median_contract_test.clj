@@ -15,7 +15,8 @@
   (is (= 1.5 (median [1.0 2.0])))       ; even length: mean of the middle two
   (is (= 0.0 (median [0.0 0.0])))       ; ties
   (is (= 5.0 (median [5.0])))           ; single element
-  (is (= -0.5 (median [0.0 -1.0]))))    ; negatives
+  (is (= -0.5 (median [0.0 -1.0])))     ; negatives
+  (is (= 3.0 (median [5.0 1.0 4.0 2.0 3.0]))))   ; odd length of five: still the middle value
 
 ;; Answer to an open question: the result is always a double, even for integer input.
 ;; (= 2 2.0) is false in Clojure, so this also pins the type.
@@ -49,6 +50,15 @@
 (defspec between-min-and-max 200
   (prop/for-all [xs numbers]
     (<= (apply min xs) (median xs) (apply max xs))))
+
+;; Pins the position: without this, any fixed position (the first third, say)
+;; would pass the two properties above.
+(defspec half-at-or-below-and-half-at-or-above 200
+  (prop/for-all [xs numbers]
+    (let [m (median xs)
+          n (count xs)]
+      (and (>= (* 2 (count (filter #(<= % m) xs))) n)
+           (>= (* 2 (count (filter #(>= % m) xs))) n)))))
 
 (defspec does-not-modify-its-input 200
   (prop/for-all [xs numbers]

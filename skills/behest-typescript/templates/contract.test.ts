@@ -12,6 +12,7 @@ describe("examples", () => {
     expect(median([0, 0])).toBe(0); // ties
     expect(median([5])).toBe(5); // single element
     expect(median([0, -1])).toBe(-0.5); // negatives
+    expect(median([5, 1, 4, 2, 3])).toBe(3); // odd length of five: still the middle value
   });
 
   // Answer to an open question: an empty array is an error, not a default.
@@ -50,6 +51,20 @@ describe("properties", () => {
       fc.property(numbers, (xs) => {
         const m = median(xs);
         return Math.min(...xs) <= m && m <= Math.max(...xs);
+      }),
+    );
+  });
+
+  // Pins the position: without this, any fixed position (the first third, say)
+  // would pass the two properties above.
+  it("has half the values at or below it and half at or above", () => {
+    fc.assert(
+      fc.property(numbers, (xs) => {
+        const m = median(xs);
+        return (
+          2 * xs.filter((x) => x <= m).length >= xs.length &&
+          2 * xs.filter((x) => x >= m).length >= xs.length
+        );
       }),
     );
   });

@@ -20,6 +20,7 @@ examples =
   , ("ties", median [0, 0] == Right 0)
   , ("single element", median [5] == Right 5)
   , ("negatives", median [0, -1] == Right (-0.5))
+  , ("odd length of five: still the middle value", median [5, 1, 4, 2, 3] == Right 3)
   , -- Answer to an open question: an empty list is an error, not a default.
     ("empty is an error", median [] == Left Empty)
   , -- Answer to an open question: NaN is rejected, not skipped or propagated.
@@ -53,6 +54,18 @@ prop_between_min_and_max =
     Right m -> property (minimum xs <= m && m <= maximum xs)
     Left e -> counterexample (show e) False
 
+-- Pins the position: without this, any fixed position (the first third, say)
+-- would pass the two properties above.
+prop_half_below_half_above :: Property
+prop_half_below_half_above =
+  forAllShrink numbers shrink $ \xs -> case median xs of
+    Right m ->
+      property
+        ( 2 * length (filter (<= m) xs) >= length xs
+            && 2 * length (filter (>= m) xs) >= length xs
+        )
+    Left e -> counterexample (show e) False
+
 -- --- runner -------------------------------------------------------------------
 
 main :: IO ()
@@ -61,4 +74,5 @@ main = do
   mapM_ (putStrLn . ("FAILED example: " ++)) bad
   r1 <- quickCheckResult prop_order_does_not_matter
   r2 <- quickCheckResult prop_between_min_and_max
-  unless (null bad && all isSuccess [r1, r2]) exitFailure
+  r3 <- quickCheckResult prop_half_below_half_above
+  unless (null bad && all isSuccess [r1, r2, r3]) exitFailure

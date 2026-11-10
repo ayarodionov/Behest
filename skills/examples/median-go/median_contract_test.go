@@ -20,11 +20,12 @@ func TestExamples(t *testing.T) {
 		in   []float64
 		want float64
 	}{
-		{[]float64{3, 1, 2}, 2},  // odd length: the middle value
-		{[]float64{1, 2}, 1.5},   // even length: mean of the two middle values
-		{[]float64{0, 0}, 0},     // ties
-		{[]float64{5}, 5},        // single element
-		{[]float64{0, -1}, -0.5}, // negatives
+		{[]float64{3, 1, 2}, 2},       // odd length: the middle value
+		{[]float64{1, 2}, 1.5},        // even length: mean of the two middle values
+		{[]float64{0, 0}, 0},          // ties
+		{[]float64{5}, 5},             // single element
+		{[]float64{0, -1}, -0.5},      // negatives
+		{[]float64{5, 1, 4, 2, 3}, 3}, // odd length of five: still the middle value
 	}
 	for _, c := range cases {
 		got, err := Median(c.in)
@@ -89,6 +90,34 @@ func TestBetweenMinAndMax(t *testing.T) {
 		s := append([]float64(nil), xs...)
 		sort.Float64s(s)
 		return s[0] <= m && m <= s[len(s)-1]
+	}
+	if err := quick.Check(f, nil); err != nil {
+		t.Error(err)
+	}
+}
+
+// Pins the position: without this, any fixed position (the first third, say) would
+// pass "order does not matter" and "between min and max".
+func TestHalfAtOrBelowAndHalfAtOrAbove(t *testing.T) {
+	f := func(xs []float64) bool {
+		xs = finite(xs)
+		if len(xs) == 0 {
+			return true
+		}
+		m, err := Median(xs)
+		if err != nil {
+			return false
+		}
+		below, above := 0, 0
+		for _, x := range xs {
+			if x <= m {
+				below++
+			}
+			if x >= m {
+				above++
+			}
+		}
+		return 2*below >= len(xs) && 2*above >= len(xs)
 	}
 	if err := quick.Check(f, nil); err != nil {
 		t.Error(err)

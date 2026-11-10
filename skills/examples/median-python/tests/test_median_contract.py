@@ -17,6 +17,7 @@ def test_examples():
     assert median([0.0, 0.0]) == 0.0  # ties
     assert median([5.0]) == 5.0  # single element
     assert median([0.0, -1.0]) == -0.5  # negatives
+    assert median([5.0, 1.0, 4.0, 2.0, 3.0]) == 3.0  # odd length of five: still the middle value
 
 
 # Answer to an open question: the result is always a float, even for int input.
@@ -60,6 +61,15 @@ def test_order_does_not_matter(xs, rnd):
 @given(numbers)
 def test_between_min_and_max(xs):
     assert min(xs) <= median(xs) <= max(xs)
+
+
+# Pins the position: without this, any fixed position (the first third, say) would
+# pass "order does not matter" and "between min and max".
+@given(numbers)
+def test_half_at_or_below_and_half_at_or_above(xs):
+    m = median(xs)
+    assert 2 * sum(x <= m for x in xs) >= len(xs)
+    assert 2 * sum(x >= m for x in xs) >= len(xs)
 
 
 @given(numbers)

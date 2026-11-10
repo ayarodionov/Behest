@@ -24,6 +24,7 @@ class MedianContractTest {
         assertEquals(0.0, Median.median(List.of(0.0, 0.0)));      // ties
         assertEquals(5.0, Median.median(List.of(5.0)));           // single element
         assertEquals(-0.5, Median.median(List.of(0.0, -1.0)));    // negatives
+        assertEquals(3.0, Median.median(List.of(5.0, 1.0, 4.0, 2.0, 3.0))); // odd length of five: still the middle value
     }
 
     // Answer to an open question: an empty list is an error, not a default.
@@ -85,6 +86,21 @@ class MedianContractTest {
             double m = Median.median(xs);
             assertTrue(Collections.min(xs) <= m && m <= Collections.max(xs),
                     "median " + m + " outside range of " + xs);
+        }
+    }
+
+    // Pins the position: without this, any fixed position (the first third, say)
+    // would pass "order does not matter" and "between min and max".
+    @Test
+    void halfAtOrBelowAndHalfAtOrAbove() {
+        Random rnd = new Random(20260104L);
+        for (int i = 0; i < RUNS; i++) {
+            List<Double> xs = randomNumbers(rnd);
+            double m = Median.median(xs);
+            long below = xs.stream().filter(x -> x <= m).count();
+            long above = xs.stream().filter(x -> x >= m).count();
+            assertTrue(2 * below >= xs.size() && 2 * above >= xs.size(),
+                    "median " + m + " of " + xs);
         }
     }
 

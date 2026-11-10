@@ -19,6 +19,7 @@ public class MedianContract
         Assert.Equal(0.0, Median.Of(new[] { 0.0, 0.0 }));      // ties
         Assert.Equal(5.0, Median.Of(new[] { 5.0 }));           // single element
         Assert.Equal(-0.5, Median.Of(new[] { 0.0, -1.0 }));    // negatives
+        Assert.Equal(3.0, Median.Of(new[] { 5.0, 1.0, 4.0, 2.0, 3.0 })); // odd length of five: still the middle value
     }
 
     // Answer to an open question: an empty list is an error, not a default.
@@ -58,6 +59,16 @@ public class MedianContract
         var a = Values(xs);
         var m = Median.Of(a);
         return a.Min() <= m && m <= a.Max();
+    }
+
+    // Pins the position: without this, any fixed position (the first third, say)
+    // would pass the two properties above.
+    [Property]
+    public bool HalfAtOrBelowAndHalfAtOrAbove(NonEmptyArray<NormalFloat> xs)
+    {
+        var a = Values(xs);
+        var m = Median.Of(a);
+        return 2 * a.Count(x => x <= m) >= a.Length && 2 * a.Count(x => x >= m) >= a.Length;
     }
 
     [Property]

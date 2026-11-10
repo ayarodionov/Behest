@@ -19,6 +19,9 @@ even_length_test() ->
 empty_list_test() ->
     ?assertEqual({error, empty}, median:median([])).
 
+five_elements_test() ->
+    ?assertEqual({ok, 3.0}, median:median([5.0, 1.0, 4.0, 2.0, 3.0])).
+
 %% --- properties -------------------------------------------------------
 
 order_does_not_matter_test_() ->
@@ -26,6 +29,9 @@ order_does_not_matter_test_() ->
 
 between_min_and_max_test_() ->
     prop_test(prop_bounds()).
+
+half_below_half_above_test_() ->
+    prop_test(prop_halves()).
 
 prop_order() ->
     ?FORALL(Xs, list(float()),
@@ -36,6 +42,17 @@ prop_bounds() ->
             begin
                 {ok, M} = median:median(Xs),
                 lists:min(Xs) =< M andalso M =< lists:max(Xs)
+            end).
+
+%% Pins the position: without this, any fixed position (the first third, say)
+%% would pass the two properties above.
+prop_halves() ->
+    ?FORALL(Xs, non_empty(list(integer())),
+            begin
+                {ok, M} = median:median(Xs),
+                N = length(Xs),
+                2 * length([X || X <- Xs, X =< M]) >= N andalso
+                    2 * length([X || X <- Xs, X >= M]) >= N
             end).
 
 %% --- helpers ----------------------------------------------------------

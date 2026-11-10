@@ -21,6 +21,7 @@ class MedianContractTest : StringSpec({
         median(listOf(0.0, 0.0)) shouldBe 0.0 // ties
         median(listOf(5.0)) shouldBe 5.0 // single element
         median(listOf(0.0, -1.0)) shouldBe -0.5 // negatives
+        median(listOf(5.0, 1.0, 4.0, 2.0, 3.0)) shouldBe 3.0 // odd length of five: still the middle value
     }
 
     // Answer to an open question: an empty list is an error, not a default.
@@ -51,6 +52,16 @@ class MedianContractTest : StringSpec({
 
     "is between min and max" {
         checkAll(numbers) { xs -> median(xs).shouldBeBetween(xs.min(), xs.max(), 0.0) }
+    }
+
+    // Pins the position: without this, any fixed position (the first third, say)
+    // would pass the two properties above.
+    "half the values are at or below it and half at or above" {
+        checkAll(numbers) { xs ->
+            val m = median(xs)
+            (2 * xs.count { it <= m } >= xs.size) shouldBe true
+            (2 * xs.count { it >= m } >= xs.size) shouldBe true
+        }
     }
 
     "does not modify its input" {

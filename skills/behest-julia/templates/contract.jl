@@ -2,6 +2,7 @@
 #
 # Contract for `median`. Approved by the human; do not edit to make a build pass.
 # Run by a user: 6 examples, the empty-input test and 3000 property checks pass.
+# (That run was before the five-element example and the "half at or below" checks were added.)
 using Test
 using Random
 
@@ -13,6 +14,7 @@ using Random
     @test median([0.0, 0.0]) == 0.0
     @test median([5.0]) == 5.0
     @test median([0.0, -1.0]) == -0.5
+    @test median([5.0, 1.0, 4.0, 2.0, 3.0]) == 3.0   # odd length of five: still the middle value
     @test median([1, 2, 3]) isa Float64      # answer: the result is always a Float64
 end
 
@@ -33,6 +35,9 @@ randvec(rng) = rand(rng, -1000.0:0.5:1000.0, rand(rng, 1:12))   # ties likely
         @test m == median(shuffle(RNG, xs))
         # between min and max
         @test minimum(xs) <= m <= maximum(xs)
+        # at least half at or below, at least half at or above (pins the position)
+        @test 2 * count(<=(m), xs) >= length(xs)
+        @test 2 * count(>=(m), xs) >= length(xs)
         # does not modify its input
         ys = copy(xs); median(ys); @test ys == xs
     end

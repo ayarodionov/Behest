@@ -13,6 +13,7 @@ fn examples() {
     assert_eq!(median(&[0.0, 0.0]), Ok(0.0)); // ties
     assert_eq!(median(&[5.0]), Ok(5.0)); // single element
     assert_eq!(median(&[0.0, -1.0]), Ok(-0.5)); // negatives
+    assert_eq!(median(&[5.0, 1.0, 4.0, 2.0, 3.0]), Ok(3.0)); // odd length of five: still the middle value
 }
 
 // Boundary: the mean of two huge values must not overflow to infinity.
@@ -59,6 +60,16 @@ proptest! {
         let lo = xs.iter().cloned().fold(f64::INFINITY, f64::min);
         let hi = xs.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
         prop_assert!(lo <= m && m <= hi, "median {} outside [{}, {}]", m, lo, hi);
+    }
+
+    // Pins the position: without this, any fixed position (the first third, say)
+    // would pass the two properties above.
+    #[test]
+    fn half_at_or_below_and_half_at_or_above(xs in finite_vec()) {
+        let m = median(&xs).unwrap();
+        let below = xs.iter().filter(|&&x| x <= m).count();
+        let above = xs.iter().filter(|&&x| x >= m).count();
+        prop_assert!(2 * below >= xs.len() && 2 * above >= xs.len(), "median {} of {:?}", m, xs);
     }
 }
 // Not modifying the input is guaranteed by the signature (`&[f64]`), so it is

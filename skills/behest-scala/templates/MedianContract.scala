@@ -13,6 +13,7 @@ object MedianContract extends Properties("median") {
       median(List(1.0, 2.0)) == Right(1.5) && // even length: mean of the middle two
       median(List(0.0, 0.0)) == Right(0.0) && // ties
       median(List(5.0)) == Right(5.0) && // single element
+      median(List(5.0, 1.0, 4.0, 2.0, 3.0)) == Right(3.0) && // odd length of five: still the middle value
       median(List(0.0, -1.0)) == Right(-0.5) // negatives
   )
 
@@ -40,5 +41,11 @@ object MedianContract extends Properties("median") {
 
   property("is between min and max") = forAll(numbers) { xs =>
     median(xs).exists(m => xs.min <= m && m <= xs.max)
+  }
+
+  // Pins the position: without this, any fixed position (the first third, say)
+  // would pass the two properties above.
+  property("half at or below, half at or above") = forAll(numbers) { xs =>
+    median(xs).exists(m => 2 * xs.count(_ <= m) >= xs.length && 2 * xs.count(_ >= m) >= xs.length)
   }
 }

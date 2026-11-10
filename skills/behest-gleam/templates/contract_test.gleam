@@ -23,6 +23,8 @@ pub fn examples_test() {
   // single element
   assert median([0.0, -1.0]) == Ok(-0.5)
   // negatives
+  assert median([5.0, 1.0, 4.0, 2.0, 3.0]) == Ok(3.0)
+  // odd length of five: still the middle value
 }
 
 // Answer to an open question: an empty list is an error, not a default.
@@ -61,6 +63,16 @@ pub fn order_does_not_matter_test() {
   assert median(xs) == median(reverse(xs))
 }
 
+// Pins the position: without this, any fixed position (the first third, say)
+// would pass the two properties above.
+pub fn half_below_half_above_test() {
+  use xs <- qcheck.given(numbers())
+  let assert Ok(m) = median(xs)
+  let n = count(xs, fn(_) { True })
+  assert 2 * count(xs, fn(x) { x <=. m }) >= n
+  assert 2 * count(xs, fn(x) { x >=. m }) >= n
+}
+
 // --- small helpers so the contract needs only the standard library -------------
 
 fn reverse(xs: List(Float)) -> List(Float) {
@@ -85,6 +97,17 @@ fn list_max(xs: List(Float)) -> Result(Float, Nil) {
   case xs {
     [] -> Error(Nil)
     [x, ..rest] -> Ok(fold(rest, x, fn(a, b) { case b >. a { True -> b False -> a } }))
+  }
+}
+
+fn count(xs: List(Float), keep: fn(Float) -> Bool) -> Int {
+  case xs {
+    [] -> 0
+    [x, ..rest] ->
+      case keep(x) {
+        True -> 1 + count(rest, keep)
+        False -> count(rest, keep)
+      }
   }
 }
 

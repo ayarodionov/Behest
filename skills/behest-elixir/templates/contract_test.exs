@@ -15,6 +15,10 @@ defmodule Median.ContractTest do
       assert Median.median([4.0, 1.0, 3.0, 2.0]) == {:ok, 2.5}
     end
 
+    test "odd length of five: still the middle value" do
+      assert Median.median([5.0, 1.0, 4.0, 2.0, 3.0]) == {:ok, 3.0}
+    end
+
     test "empty list is an error" do
       assert Median.median([]) == {:error, :empty}
     end
@@ -31,6 +35,17 @@ defmodule Median.ContractTest do
       check all xs <- list_of(integer(), min_length: 1) do
         {:ok, m} = Median.median(xs)
         assert Enum.min(xs) <= m and m <= Enum.max(xs)
+      end
+    end
+
+    # Pins the position: without this, any fixed position (the first third, say)
+    # would pass the two properties above.
+    property "at least half the values are at or below it, and at least half at or above" do
+      check all xs <- list_of(integer(), min_length: 1) do
+        {:ok, m} = Median.median(xs)
+        n = length(xs)
+        assert 2 * Enum.count(xs, &(&1 <= m)) >= n
+        assert 2 * Enum.count(xs, &(&1 >= m)) >= n
       end
     end
   end
