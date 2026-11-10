@@ -128,6 +128,32 @@ The human's rule changed with the tasks: answer what is asked, and object to any
 - The unusual answers were invented to be unusual. Real requirements are a mix, and how often a real human wants something a model would not guess is the number that decides whether this is worth it; these tasks do not measure it.
 - One more tool limit showed up: on code written as a pipeline of regex replacements `mutate.py` finds little or nothing to change (0 and 1 mutants in the two `slug2` runs), so the mutation check says nothing there.
 
+## Tiers, 2026-11-10: 3 runs on the second task set
+
+The workflow gained three tiers (light, standard, strict), chosen by the AI from the risk of the task. One run per task was repeated on the unusual-answers set with the new skill text and the same instructions; nothing told the agents which tier to use.
+
+All three chose **light** and said why ("a small pure function that is cheap to redo"). Each sent one message with three questions and a list of 11 to 15 defaults, got one reply, implemented, and ran its example tests. Nothing was frozen and no effect, disagreement or mutation check was run.
+
+| Task | Tier chosen | Core | Decisions right | Questions asked | Defaults listed | Human replies | Agent seconds | Tokens (thousands) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| slug2 | light | 4/4 | 10/10 | 3 | 15 | 1 | 85 | 91 |
+| intervals2 | light | 7/7 | 6/6 | 3 | 11 | 1 | 64 | 90 |
+| duration2 | light | 7/7 | 10/10 | 3 | 13 | 1 | 91 | 92 |
+
+Same tasks, the three ways:
+
+| | plain (6 runs) | Behest standard (6 runs) | Behest light (3 runs) |
+| --- | --- | --- | --- |
+| Decisions right | 46 of 52 | 52 of 52 | 26 of 26 |
+| Questions per run, mean | 1.8 | 5.5 | 3.0 |
+| Human replies per run, mean | 1.0 | 1.3 | 1.0 |
+| Agent seconds per run, mean | 80 | 217 | 80 |
+
+- **Light costs the same agent time as a plain prompt and got every decision right.** The gain over plain comes from one thing: the choices are shown before the code is written, in a list complete enough to include the points a plain run never mentions (the length limit, single-point intervals).
+- **Of the 11 unusual decisions, 3 were surfaced as questions and 8 only as defaults.** With three questions at most, almost everything rides on the defaults list being complete and on the human reading it.
+- **What light gives up:** no frozen contract, no reference model, no mutation or disagreement check. On these tasks those extra checks had not changed any score either, so their value is not measured here; it would show up in maintenance, regeneration and harder code, none of which the kit tests.
+- **Limits:** three runs, one model, the same non-blind AI "human" who reads every default. The tier choice was only exercised on tasks where light is the right answer; whether an agent picks standard or strict when it should is untested.
+
 ## Scorer checks (not AI runs)
 
 | Task | Solution | Core | Decisions right | Wrong decisions |
