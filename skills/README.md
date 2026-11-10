@@ -30,6 +30,16 @@ Use `behest-contract-first` together with the one for your language.
 
 The workflow, the freeze-by-hash script, the edit-blocking hook and the effect scan are language-independent. C++ is not covered: its contract would need a test framework chosen per project and its effects (memory, undefined behaviour) are not visible to a grep, so the fit is weaker.
 
+## Tiers
+
+The workflow has three levels, chosen by risk. What never changes is that every choice the request left open is shown to the human, with a proposal, before any code is written.
+
+| Tier | For | What it does |
+| --- | --- | --- |
+| Light | Small code that is cheap to redo | Examples as an ordinary test file, one message with questions and defaults, implement, report. Nothing frozen. |
+| Standard | Library and public functions (the default) | Contract with a reference model, one-message approval, freeze, effect scan, mutation check; a disagreement check only when there is no reference model. |
+| Strict | Money, security, data loss, concurrency, APIs that cannot change | Everything, plus an independent review of the contract, frozen test configuration and a CI check. |
+
 ## Install
 
 You do **not** need the whole Behest repo. The skills are self-contained folders (`behest-contract-first` plus one per language: `behest-elixir`, `behest-erlang`, `behest-go`, `behest-rust`, `behest-python`, `behest-java`, `behest-julia`, `behest-typescript`, `behest-kotlin`, `behest-csharp`, `behest-scala`, `behest-gleam`, `behest-clojure`, `behest-haskell`, `behest-ocaml`), and installing means copying them into a Claude Code skills directory:

@@ -20,7 +20,27 @@ Language details are in `behest-elixir`, `behest-erlang`, `behest-go`, `behest-r
 
 When unsure which kind a point is, make it a question. Aim for at most five questions; if you have more, the least likely to matter become defaults.
 
+## Tiers: how much ceremony
+
+The full workflow costs several times the effort of just writing the code, so match it to the risk. Pick a tier yourself, say which one and why in your first message ("Tier: light, because ..."), and let the human change it.
+
+| Tier | Use when | Steps |
+| --- | --- | --- |
+| **Light** | Small and cheap to redo: a helper, a script, an internal function, a pure function of a few dozen lines whose only caller is the person asking. | 1, 2L, 4, 7, 11 |
+| **Standard** | The default: a library or public function, code other people will call, anything that will be regenerated or maintained. | 1 to 8, 10, 11, and 9 when the contract has no reference model |
+| **Strict** | A mistake is expensive or hard to see: money, authentication or security, deleting or overwriting data, concurrency and message protocols, an API that cannot change later. Or whenever the human asks. | all of 1 to 11, plus the strict extras below |
+
+What stays the same in every tier is the part that matters most: **every choice the request did not make is shown to the human, with your proposal, before you implement.** The tiers only change how much is frozen and checked afterwards.
+
+- **Light** in detail: write the examples as an ordinary test file (step 2L: no reference model unless it is a one-liner, no effects line, no `OPEN.md`). Send one message with at most three questions and the list of defaults (step 4). On `ok`, implement and run the tests. Nothing is frozen and steps 8 to 10 are skipped. The final report lists the choices again. If the task turns out bigger or riskier than it looked, say so and move up a tier.
+- **Standard** skips the disagreement check (step 9) when the contract's main property is agreement with a reference model: the reference and the implementation are already two independent versions, compared on every run.
+- **Strict extras:** run the disagreement check even with a reference model; put the test configuration and generators under `approved.sh` too, so they cannot be weakened; ask for the contract to be reviewed by someone who has not seen the implementation (a second person, or a fresh agent given only the request and the contract); and make sure `approved.sh check` runs in CI, outside your control.
+
+When unsure between two tiers, take the higher one for anything that touches the strict list, and the lower one otherwise.
+
 ## Steps
+
+The numbers are the ones the tier table refers to. Skip the steps your tier leaves out.
 
 1. **Restate** the request in one sentence.
 2. **Draft the contract** in a test file, before any implementation:
