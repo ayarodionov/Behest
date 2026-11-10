@@ -1,6 +1,6 @@
 # Does Behest help? A small experiment
 
-Behest claims that an AI which builds a contract first and asks about unclear cases gets more of the human's intent right than one that just writes the code. This directory is a kit for testing that claim. A first **pilot of 18 runs** is in [`results/`](results/README.md): the Behest arm got 69 of 69 decisions right against 63 of 69 for the plain arm, at about five times the agent time and eight times the questions. It was run by an AI playing the human, on one model, so treat it as a smoke test of the kit, not as evidence. It also showed that these three tasks are too easy to separate the arms well. A rerun of three Behest runs after the workflow was changed to ask fewer questions kept every decision right with about half the questions.
+Behest claims that an AI which builds a contract first and asks about unclear cases gets more of the human's intent right than one that just writes the code. This directory is a kit for testing that claim. A first **pilot of 18 runs** is in [`results/`](results/README.md): the Behest arm got 69 of 69 decisions right against 63 of 69 for the plain arm, at about five times the agent time and eight times the questions. It was run by an AI playing the human, on one model, so treat it as a smoke test of the kit, not as evidence. It also showed that these three tasks are too easy to separate the arms well. A rerun of three Behest runs after the workflow was changed to ask fewer questions kept every decision right with about half the questions. On a **second task set with unusual answers** (12 runs) the gap is real: Behest 52 of 52, plain 46 of 52 after one round of corrections, and the plain misses were all choices it had never mentioned.
 
 ## The idea
 
@@ -11,6 +11,9 @@ Each task is a short, deliberately underspecified request for one Elixir functio
 | [`slug`](tasks/slug/) | `Slug.slugify/1` | 8 |
 | [`intervals`](tasks/intervals/) | `Intervals.merge/1` | 6 |
 | [`duration`](tasks/duration/) | `Duration.parse/1` | 9 |
+| [`slug2`](tasks/slug2/) | same request, 4 unusual answers | 10 |
+| [`intervals2`](tasks/intervals2/) | same request, 3 unusual answers | 6 |
+| [`duration2`](tasks/duration2/) | same request, 4 unusual answers | 10 |
 
 Each task has `prompt.md` (what the AI gets), `answers.md` (what the human says, and only if asked) and `checks.exs` (the hidden checks). `reference/` holds a solution that gets everything right.
 
@@ -23,7 +26,7 @@ Each task has `prompt.md` (what the AI gets), `answers.md` (what the human says,
 
 1. `experiment/new_run.sh TASK ARM DIR` creates an empty directory **outside this repository** with the prompt (and, for `behest`, the skills). The AI must not be able to read `checks.exs`, `answers.md` or `reference/`.
 2. Start a fresh AI session in that directory. Paste `prompt.md` as the request. Start a stopwatch.
-3. If the AI asks a question, answer it from `answers.md`, in those words. If the point is not listed, say "your choice". **Never volunteer an answer that was not asked for**, in either arm. If the AI asks for approval of a contract, read it, correct anything that contradicts `answers.md` only if you actually notice it, and approve.
+3. If the AI asks a question, answer it from `answers.md`, in those words. If it states an assumption that names a case and contradicts the sheet, object, in either arm; if it says it is done and lists its choices, note the score at that point, then send the objections once and score again. If the point is not listed, say "your choice". **Never volunteer an answer that was not asked for**, in either arm. If the AI asks for approval of a contract, read it, correct anything that contradicts `answers.md` only if you actually notice it, and approve.
 4. Stop the stopwatch when the AI says it is done. Note the minutes you spent reading and answering, and the number of questions asked.
 5. Score: `elixir experiment/score.exs TASK DIR/lib/<file>.ex`. Add a row to [`results/README.md`](results/README.md).
 

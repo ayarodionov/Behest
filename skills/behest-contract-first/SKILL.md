@@ -35,7 +35,7 @@ When unsure which kind a point is, make it a question. Aim for at most five ques
    Put the proposed answers and the defaults into the draft contract as examples already, so the cases the human sees are what the contract really says.
 4. **Stop and ask.** Show the human the draft contract and the open questions as concrete cases. **Show every property as cases too:** generate five or so inputs from the property's own generator and print what the property demands for each (for a reference model: input and the reference's answer; for others: the two things that must be equal, or the bound). Run this for real, do not make the cases up; it needs no implementation. People judge cases far better than generator code, and a wrong reference or a generator that only produces trivial inputs shows up here. Then, in the **same message**:
    - the questions, numbered, each with its options and your proposal first;
-   - the defaults as a short list under "I will also assume, unless you object";
+   - the defaults as a short list under "I will also assume, unless you object". Make this list complete and concrete, one case per line with its result: in trials about half of the unusual things a human wanted were caught here, not by the questions, and a default that is not listed cannot be objected to. Include limits and conventions you would normally not think to mention (length limits, which characters are separators, what an empty result looks like);
    - one closing line: "Reply `ok` to accept every proposal and approve the contract, or give the numbers you want changed."
 
    One reply from the human should be enough. Do not ask for approval in a separate round unless an answer changed something they have not seen. Wait for the reply.

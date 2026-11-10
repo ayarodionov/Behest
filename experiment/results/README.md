@@ -85,6 +85,49 @@ After the pilot the workflow was changed: every open point gets a proposed answe
 - **The cost is still well above plain:** about three and a half times the agent time, where it was five times.
 - **Limits:** three runs, the same tasks and the same non-blind AI "human" as the pilot; a default that happened to be wrong would only be caught if the human reads the list, which here was an AI comparing it with the sheet. With these tasks the proposals were right nearly every time, so the rerun shows the questions can be cut safely here, not that the sorting rule is right in general.
 
+## Second task set (unusual answers), 2026-11-10: 12 runs
+
+The first task set was too easy: its answer sheets hold the conventional answers. `slug2`, `intervals2` and `duration2` use the same requests, but 11 of their 26 decisions are unusual (underscores are kept, `&` becomes "and", slugs are cut at 30 characters, adjacent intervals merge, a bare number means minutes, and so on). A conventional solution scores 15 of 26. Two runs per task and arm; the `behest` arm used the questions-and-defaults workflow.
+
+The human's rule changed with the tasks: answer what is asked, and object to any stated assumption that names a case and contradicts the sheet. That applies to both arms. Four plain runs said they were done and listed their choices; they are scored at that point and again after one reply with the human's objections.
+
+| Task | Arm | Run | Core | Decisions right | Still wrong | When it first said done | Questions asked | Human replies | Agent seconds | Tokens (thousands) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| slug2 | plain | 1 | 4/4 | 8/10 | ampersand, maxlen | 6/10 | 1 | 1 | 88 | 85 |
+| slug2 | plain | 2 | 4/4 | 8/10 | maxlen, underscore | 6/10 | 1 | 1 | 54 | 83 |
+| slug2 | behest | 1 | 4/4 | 10/10 | | | 5 | 1 | 200 | 119 |
+| slug2 | behest | 2 | 4/4 | 10/10 | | | 5 | 1 | 190 | 108 |
+| intervals2 | plain | 1 | 7/7 | 5/6 | point | 3/6 | 1 | 1 | 77 | 84 |
+| intervals2 | plain | 2 | 7/7 | 5/6 | point | 3/6 | 0 | 1 | 50 | 83 |
+| intervals2 | behest | 1 | 7/7 | 6/6 | | | 4 | 1 | 138 | 112 |
+| intervals2 | behest | 2 | 7/7 | 6/6 | | | 4 | 1 | 134 | 112 |
+| duration2 | plain | 1 | 7/7 | 10/10 | | (asked first) | 4 | 1 | 106 | 87 |
+| duration2 | plain | 2 | 7/7 | 10/10 | | (asked first) | 4 | 1 | 104 | 87 |
+| duration2 | behest | 1 | 7/7 | 10/10 | | | 7 | 2 | 313 | 128 |
+| duration2 | behest | 2 | 7/7 | 10/10 | | | 8 | 2 | 328 | 115 |
+
+| | plain | behest |
+| --- | --- | --- |
+| Decisions right, final | 46 of 52 | 52 of 52 |
+| Decisions right when it first said done (the four runs that did not ask) | 18 of 32, exactly the conventional score | |
+| Runs with every decision right | 2 of 6 | 6 of 6 |
+| Questions asked | 11 | 33 |
+| Human replies | 6 | 8 |
+| Agent seconds, mean per run | 80 | 217 |
+
+### What this shows
+
+- **Here the difference is real.** Without help the plain arm delivers the conventional solution. After one round of objections it still misses a decision in 4 of 6 runs, always one it never mentioned: the length limit (both `slug2` runs), the single-point interval (both `intervals2` runs), and once each the `&` sign and the underscore. A human cannot object to a choice that was never shown.
+- **Behest's value was in showing every choice, not in asking.** In the six `behest` runs the 22 unusual decisions were all surfaced: 12 as questions and 10 only in the "I will also assume" list. If the human had answered the questions and skipped that list, 10 of 22 would have been wrong. The sorting rule does not predict what a particular human cares about; the list of defaults is what makes it safe, and it has to be read.
+- **Plain did as well as Behest on `duration2`.** Both plain runs stopped and asked on their own, listed their choices, and got 10 of 10 after one reply. A model that asks unprompted closes most of the gap.
+- **Cost:** about 2.7 times the agent time of plain here (it was 5 times in the pilot), three times the questions, and 8 human replies against 6. Both `duration2` Behest runs needed a second round, because the unusual answers opened new cases.
+
+### Limits
+
+- Twelve runs, one model, the same non-blind AI "human" as before, who applies "object to stated assumptions" perfectly. A real person skims; the 10 decisions caught through the defaults list are exactly the ones a hurried reader would lose.
+- The unusual answers were invented to be unusual. Real requirements are a mix, and how often a real human wants something a model would not guess is the number that decides whether this is worth it; these tasks do not measure it.
+- One more tool limit showed up: on code written as a pipeline of regex replacements `mutate.py` finds little or nothing to change (0 and 1 mutants in the two `slug2` runs), so the mutation check says nothing there.
+
 ## Scorer checks (not AI runs)
 
 | Task | Solution | Core | Decisions right | Wrong decisions |
