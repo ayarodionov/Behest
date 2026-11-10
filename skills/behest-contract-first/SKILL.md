@@ -18,10 +18,11 @@ Language details are in `behest-elixir`, `behest-erlang`, `behest-go`, `behest-r
 1. **Restate** the request in one sentence.
 2. **Draft the contract** in a test file, before any implementation:
    - 3–6 **examples**, including at least one edge case and one invalid input.
-   - **Properties**: what must be true for all inputs (symmetry, bounds, round trips, idempotence, agreement with a simple reference).
+   - **Reference model first.** If a slow, obviously correct version exists (a plain map instead of a cache, a brute-force loop, a quadratic scan), write it in the contract file and make "the implementation agrees with the reference on every input" the main property. It is the strongest check and the one a human can read. Keep it short enough to verify at a glance; if it is not obviously correct, it is not a reference.
+   - **Other properties**, when there is no reference or it does not cover everything: symmetry, bounds, round trips, idempotence.
    - **Effects**: a comment at the top of the contract file, `behest-effects: none` (or a list such as `time, ets`), saying what the implementation may touch. Allowed names: `send`, `spawn`, `ets` (BEAM only), `io`, `time`, `random`, `state` (global or shared mutable state). It lives in the contract file so it is frozen with the rest of the contract.
 3. **Record every unclear point** in `OPEN.md` as `- [ ] question`. Do not resolve any of them yourself.
-4. **Stop and ask.** Show the human the draft contract and the open questions as concrete cases. Wait for answers.
+4. **Stop and ask.** Show the human the draft contract and the open questions as concrete cases. **Show every property as cases too:** generate five or so inputs from the property's own generator and print what the property demands for each (for a reference model: input and the reference's answer; for others: the two things that must be equal, or the bound). Run this for real, do not make the cases up; it needs no implementation. People judge cases far better than generator code, and a wrong reference or a generator that only produces trivial inputs shows up here. Wait for answers.
 5. **Fold each answer in** as an example or property, then delete the item from `OPEN.md`. Run `scripts/check_open.sh`; it must pass.
 6. **Get approval.** When the human says the contract is approved, run `scripts/approved.sh approve <contract files>`. From then on those files are frozen.
 7. **Implement.** Run the tests. If the implementation fails the contract, fix the implementation. **Never weaken, edit or delete an approved contract file to make the build pass.** If you believe the contract is wrong, stop and tell the human why, with a concrete input.

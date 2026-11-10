@@ -34,6 +34,10 @@ scripts/effects.sh --declared test/contracts/<module>_contract_test.exs lib/<mod
 
 (`scripts/` is in the `behest-contract-first` skill directory.)
 
+## Reference model and cases for the human
+
+When a slow, obviously correct version exists (a plain `Map` for a cache, `Enum` for a hand-written loop), start from `templates/reference_test.exs` instead: the reference lives in the contract file, the main property is `impl(x) === reference(x)`, and a test tagged `:cases` prints concrete inputs with the answer the contract demands (`mix test --only cases`; exclude the tag in `test_helper.exs`). Paste that output into the approval question. This template was not run where it was written; its Erlang twin was.
+
 ## Disagreement check
 
 Copy `templates/disagree_test.exs` to `test/scratch/`, fill in the alternative implementation, and run `mix test test/scratch`. StreamData shrinks a failure to a minimal input, which is exactly the case to show the human. Delete the scratch file when done.
