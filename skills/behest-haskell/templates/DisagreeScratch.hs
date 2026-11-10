@@ -25,8 +25,15 @@ altMedian xs = Right (sort xs !! ((length xs - 1) `div` 2)) -- lower middle valu
 small :: Gen [Double]
 small = resize 8 (listOf1 (fromIntegral <$> choose (-5 :: Int, 5)))
 
+-- Removing one element flips odd/even length and can hide a disagreement that
+-- needs an even length, so also try removing two neighbours at a time.
+shrinkWithPairs :: [Double] -> [[Double]]
+shrinkWithPairs xs =
+  [take i xs ++ drop (i + 2) xs | i <- [0 .. length xs - 2], length xs > 2]
+    ++ shrink xs
+
 prop_agree :: Property
-prop_agree = forAllShrink small shrink $ \xs ->
+prop_agree = forAllShrink small shrinkWithPairs $ \xs ->
   -- Compare the values only; map the error type if the contract needs it.
   either (const Nothing) Just (median xs)
     === either (const Nothing) Just (altMedian xs)
