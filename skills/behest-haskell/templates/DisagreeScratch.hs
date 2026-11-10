@@ -28,8 +28,8 @@ small = resize 8 (listOf1 (fromIntegral <$> choose (-5 :: Int, 5)))
 prop_agree :: Property
 prop_agree = forAllShrink small shrink $ \xs ->
   -- Compare the values only; map the error type if the contract needs it.
-  fmap Just (either (const Nothing) Just (median xs))
-    === fmap Just (either (const Nothing) Just (altMedian xs))
+  either (const Nothing) Just (median xs)
+    === either (const Nothing) Just (altMedian xs)
 
 main :: IO ()
 main = do

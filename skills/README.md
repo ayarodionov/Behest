@@ -18,7 +18,7 @@ The same idea as the [Behest language](../README.md), delivered as Claude skills
 | [`behest-scala`](behest-scala/SKILL.md) | ScalaCheck contract and disagreement check (templates not run) |
 | [`behest-gleam`](behest-gleam/SKILL.md) | gleeunit and qcheck contract and disagreement check (templates not run) |
 | [`behest-clojure`](behest-clojure/SKILL.md) | `clojure.test` and test.check contract and disagreement check |
-| [`behest-haskell`](behest-haskell/SKILL.md) | QuickCheck contract and disagreement check (templates not run) |
+| [`behest-haskell`](behest-haskell/SKILL.md) | QuickCheck contract and disagreement check |
 | [`behest-ocaml`](behest-ocaml/SKILL.md) | QCheck contract and disagreement check (templates not run) |
 
 Use `behest-contract-first` together with the one for your language.
@@ -166,5 +166,6 @@ What has actually been run:
 - **Tested:** the TypeScript skill, with Node 22, Vitest 5.1, fast-check and `tsc --strict`: the contract template passes (7 tests) against a small `median`, type-checks under `tsc --strict`, and the fast-check disagreement template found and shrank a real disagreement (`[-1, 0]`-style, lower middle value) for a lower-median alternative.
 - **Tested:** the Clojure skill, with Clojure 1.11 and test.check 1.1 (from apt): the contract template passes (8 tests, 15 assertions, 3 properties of 200 cases) and the disagreement template found and shrank a real disagreement to `[0.0 1.0]`.
 - **Effect scan, all new languages:** the patterns for TypeScript, Kotlin, C#, Gleam, Clojure, Haskell, OCaml and Scala were run on one sample file per language containing one line for each effect (all six reported correctly), on a file that declares everything, and on pure code (no false positives); the existing examples' `check.sh` still pass.
-- **Not run (written from documentation):** the Kotlin, C#, Scala, Gleam, Haskell and OCaml templates. Maven Central, NuGet and Hex were not reachable from where they were written, and the Haskell and OCaml toolchains were too slow to install. Their `SKILL.md` files say so. Run the templates once in your own project and fix any API drift before relying on them; if you do, a short report of what changed is welcome.
+- **Tested:** the Haskell skill, with GHC 9.4 and QuickCheck 2.14 (from apt): the contract template passes and the disagreement template found and shrank a real disagreement to `[0.0,1.0]`.
+- **Not run (written from documentation):** the Kotlin, C#, Scala, Gleam and OCaml templates. Maven Central, NuGet and Hex were not reachable from where they were written, and the OCaml toolchain was too slow to install. Their `SKILL.md` files say so. Run the templates once in your own project and fix any API drift before relying on them; if you do, a short report of what changed is welcome.
 - Not tested in a live Claude session: how reliably Claude follows the skill steps. The hook and CI check are what make the key rules mechanical.

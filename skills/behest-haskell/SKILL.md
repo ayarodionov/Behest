@@ -7,6 +7,8 @@ description: "Haskell specifics for the behest-contract-first workflow: QuickChe
 
 Follow `behest-contract-first` for the workflow. This skill covers the Haskell details.
 
+**Status:** the templates were compiled and run with GHC 9.4 and QuickCheck 2.14 (from apt): the contract passes and the disagreement template shrinks to `[0.0,1.0]`.
+
 Haskell already puts effects in types: a function without `IO` in its type cannot print or read the clock. The contract's effects line is therefore short for most modules, and the scan mainly catches `unsafePerformIO`, hidden mutable references and `Debug.Trace`.
 
 ## Setup
