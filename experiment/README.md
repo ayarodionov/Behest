@@ -1,6 +1,6 @@
 # Does Behest help? A small experiment
 
-Behest claims that an AI which builds a contract first and asks about unclear cases gets more of the human's intent right than one that just writes the code. This directory is a kit for testing that claim. **No AI runs have been recorded yet**: the kit is built and its scorer is checked, the experiment itself is still to be run.
+Behest claims that an AI which builds a contract first and asks about unclear cases gets more of the human's intent right than one that just writes the code. This directory is a kit for testing that claim. A first **pilot of 18 runs** is in [`results/`](results/README.md): the Behest arm got 69 of 69 decisions right against 63 of 69 for the plain arm, at about five times the agent time and eight times the questions. It was run by an AI playing the human, on one model, so treat it as a smoke test of the kit, not as evidence. It also showed that these three tasks are too easy to separate the arms well.
 
 ## The idea
 
@@ -49,6 +49,13 @@ Use the same model for both arms, a fresh session for every run, and at least th
 - **The kit was written by Behest's author with an AI's help,** and the person running it knows which arm is which. Someone independent running it would be worth more.
 - **Small numbers.** Three tasks and a handful of runs can show a large effect, not a small one.
 - **One language, one model.** Results for Elixir with one model do not carry over automatically.
+
+## What the pilot says about this kit
+
+- The answer sheets mostly hold the conventional answer, so a model that guesses does well. Better tasks need decisions where the human wants something unusual (for example: adjacent intervals do merge, a bare number means minutes).
+- The plain arm lists its choices at the end, and sometimes asks. The protocol needs a rule for questions attached to a "done" message; the pilot scored the solution as it stood and reported the answered version separately.
+- Record human minutes. Without them the cost side is only agent time.
+- Run the human blind to the arm if you can.
 
 ## Scorer check
 

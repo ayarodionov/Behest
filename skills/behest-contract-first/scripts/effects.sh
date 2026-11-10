@@ -166,6 +166,7 @@ pattern_for() {
 ignore_for() {
   case "$1:$2" in
     go:state) echo 'errors\.New|fmt\.Errorf' ;;   # sentinel errors are fine
+    beam:io) echo 'IO\.(iodata_to_binary|iodata_length|chardata_to_string)' ;;   # pure conversions
     java:state) echo 'static final [^=]*(String|int|long|double|boolean|char|Pattern|Logger) ' ;;   # constants
     csharp:state) echo 'static readonly [^=]*(string|int|long|double|bool|char|decimal|Regex) |(^|[[:space:]])const ' ;;
   esac

@@ -19,7 +19,8 @@ Usage:
 Works on text, so it is language-independent: it swaps comparison, arithmetic and
 logical operators (only where they have spaces around them), true/false, and the
 integers 0, 1 and 2. Mutants that no longer compile count as killed, so the score
-flatters the contract a little. A heuristic, not a proof.
+flatters the contract a little. Text inside triple-quoted blocks (Elixir @doc, Python
+docstrings) is skipped: it is documentation, not behaviour. A heuristic, not a proof.
 
 Mutate implementation files only. Files frozen by approved.sh are refused.
 """
@@ -64,8 +65,12 @@ def in_string(line, pos):
 
 def find_mutants(path, text):
     mutants = []
+    in_doc = False  # inside a """ ... """ block: Elixir @doc/@moduledoc, Python docstrings
     for n, line in enumerate(text.split("\n")):
-        if COMMENT.match(line) or SKIP_LINE.search(line):
+        if line.count('"""') % 2 == 1:
+            in_doc = not in_doc
+            continue
+        if in_doc or '"""' in line or COMMENT.match(line) or SKIP_LINE.search(line):
             continue
         for rx, repl in SWAPS:
             for m in rx.finditer(line):
