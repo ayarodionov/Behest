@@ -18,6 +18,8 @@ Use `behest-contract-first` together with the one for your language.
 - **[Walkthrough](WALKTHROUGH.md):** a full session building `median`, with the real output of every command.
 - **[Examples](examples/):** finished Erlang, Elixir, Go, Rust, Python and Java projects you can run.
 
+**Not only for new code.** The skills also work on code you already have. Ask Claude to write the contract for an existing function or library (examples, properties, effects) and to list the unclear cases in `OPEN.md` before changing anything. The disagreement check compares the current code against a second implementation or a plain reference model, and each disagreement is either a bug or a missing example. This is how the bugs in [elx_vast](https://github.com/ayarodionov/elx_vast) and [Exfoil](https://github.com/ayarodionov/exfoil) were found: both existed before Behest. The contract records what the code should do, so you decide, case by case, whether a surprising current behaviour is a bug to fix or a rule to keep.
+
 The workflow, the freeze-by-hash script, the edit-blocking hook and the effect scan are language-independent. C++ is not covered: its contract would need a test framework chosen per project and its effects (memory, undefined behaviour) are not visible to a grep, so the fit is weaker.
 
 ## Install
