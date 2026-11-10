@@ -1,24 +1,29 @@
 #!/usr/bin/env bash
-# Heuristic effect scan for Elixir, Erlang, Go, Julia, Rust, Python and Java source files. A grep, not a proof.
+# Heuristic effect scan for Elixir, Erlang, Go, Julia, Rust, Python, Java, TypeScript/JavaScript,
+# Kotlin, C#, Gleam, Clojure, Haskell, OCaml and Scala source files. A grep, not a proof.
 #
 # What the code may do is declared in a comment (any comment style works):
 #     # behest-effects: none            (Elixir, Julia, Python)
 #     %% behest-effects: time, ets      (Erlang)
-#     // behest-effects: send, time     (Go, Rust, Java)
+#     // behest-effects: send, time     (Go, Rust, Java, TypeScript, Kotlin, C#, Scala)
+#     ;; behest-effects: none           (Clojure)
+#     -- behest-effects: none           (Haskell)
+#     (* behest-effects: none *)        (OCaml)
 # Effects: send spawn ets io time random state
 #   send   messages, channels, remote calls
 #   spawn  processes, goroutines, tasks, threads
-#   ets    ETS tables (Erlang/Elixir only)
+#   ets    ETS tables (Erlang, Elixir, Gleam)
 #   io     files, console, network, subprocesses
 #   time   clock reads, sleeps, timers
 #   random random numbers
-#   state  global or shared mutable state (Go, Julia, Rust, Python, Java)
+#   state  global or shared mutable state (all except Erlang/Elixir)
 #
 # Usage: effects.sh --declared CONTRACT_FILE IMPL_FILE...
 #        effects.sh IMPL_FILE...          (each file carries its own declaration)
 #
 # The language is chosen from each implementation file's extension
-# (.ex .exs .erl .hrl | .go | .jl | .rs | .py | .java).
+# (.ex .exs .erl .hrl | .go | .jl | .rs | .py | .java | .ts .tsx .js .jsx .mjs .cjs | .kt .kts | .cs |
+# .gleam | .clj .cljs .cljc | .hs | .ml .mli | .scala .sc).
 # Prefer the first form: the declaration then lives in the human-approved
 # contract file, which the AI cannot edit, not in the code being checked.
 # Exits 1 if a file uses an effect it did not declare, or has no declaration.
@@ -41,6 +46,14 @@ lang_of() {
     *.rs)                   echo rust ;;
     *.py)                   echo python ;;
     *.java)                 echo java ;;
+    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs) echo typescript ;;
+    *.kt|*.kts)             echo kotlin ;;
+    *.cs)                   echo csharp ;;
+    *.gleam)                echo gleam ;;
+    *.clj|*.cljs|*.cljc)    echo clojure ;;
+    *.hs)                   echo haskell ;;
+    *.ml|*.mli)             echo ocaml ;;
+    *.scala|*.sc)           echo scala ;;
     *)                      echo unknown ;;
   esac
 }
@@ -89,6 +102,63 @@ pattern_for() {
     java:state)   echo '(^|[[:space:]])static [^(=;]*[]A-Za-z_>] +[A-Za-z_][A-Za-z_0-9]* *(=|;)|Atomic(Integer|Long|Boolean|Reference)|ConcurrentHashMap|synchronized|volatile|ThreadLocal' ;;
 
     rust:state)   echo 'static mut|Mutex|RwLock|Atomic[A-Z]|RefCell|OnceLock|OnceCell|LazyLock|lazy_static|thread_local!|Arc<' ;;
+
+    typescript:send)   echo 'postMessage\(|\.emit\(|new (WebSocket|MessageChannel|BroadcastChannel|EventSource)|\.dispatchEvent\(|\.send\(' ;;
+    typescript:spawn)  echo 'new (Worker|SharedWorker)\(|child_process|worker_threads|cluster\.fork|(^|[^A-Za-z_.])(spawn|fork|execSync|execFile)\(' ;;
+    typescript:io)     echo 'console\.|(^|[^A-Za-z_.])fetch\(|from "(node:)?(fs|http|https|net|os|child_process|readline)(/promises)?"|process\.(stdout|stderr|stdin|argv|exit)|XMLHttpRequest|localStorage|sessionStorage|(^|[^A-Za-z_.])(document|window)\.|readFileSync|writeFileSync' ;;
+    typescript:time)   echo 'Date\.now|new Date\(|performance\.now|setTimeout|setInterval|setImmediate|requestAnimationFrame|process\.hrtime' ;;
+    typescript:random) echo 'Math\.random|crypto\.(randomUUID|getRandomValues|randomBytes|randomInt)|randomUUID' ;;
+    typescript:state)  echo '^(export )?let |(^|[[:space:]])var |process\.env|globalThis|(^|[^A-Za-z_.])(window|global)\.' ;;
+
+    kotlin:send)   echo 'Channel(<|\()|\.(trySend|offer)\(|(Mutable)?(Shared|State)Flow|BlockingQueue|\.emit\(' ;;
+    kotlin:spawn)  echo '(^|[^A-Za-z_.])(launch|async) *[({]|GlobalScope|runBlocking|(^|[^A-Za-z_.])thread *[({(]|Thread\(|Executors|CoroutineScope|ProcessBuilder' ;;
+    kotlin:io)     echo '(^|[^A-Za-z_.])(println|print|readLine|readln)\(|System\.(out|err|in)|java\.(io|nio|net)|(^|[^A-Za-z_])File\(|Files\.|Paths\.|HttpClient|\.(readText|writeText|bufferedReader)\(' ;;
+    kotlin:time)   echo 'System\.(currentTimeMillis|nanoTime)|(Instant|LocalDate|LocalDateTime|LocalTime|ZonedDateTime|Clock)\.(now|system)|(^|[^A-Za-z_.])delay\(|Thread\.sleep|measureTime|TimeSource' ;;
+    kotlin:random) echo '(^|[^A-Za-z_.])Random(\.|\()|kotlin\.random|java\.util\.Random|SecureRandom|UUID\.randomUUID|\.(random|shuffled)\(' ;;
+    kotlin:state)  echo '(^|[[:space:]])var |lateinit|^object |Atomic(Int|Long|Boolean|Reference)|ConcurrentHashMap|mutable(List|Map|Set)Of|@Volatile|@Synchronized|synchronized\(|ThreadLocal' ;;
+
+    csharp:send)   echo 'Channel(\.Create|<)|\.Writer\.|BlockingCollection|ConcurrentQueue|\.SendAsync\(|\.Post\(|(^|[^A-Za-z_])Socket' ;;
+    csharp:spawn)  echo 'Task\.(Run|Factory|WhenAll|WhenAny)|new Thread\(|ThreadPool|Parallel\.|\.AsParallel\(|Process\.Start|ProcessStartInfo|async void' ;;
+    csharp:io)     echo 'Console\.|System\.IO|(^|[^A-Za-z_.])(File|Directory)\.|StreamReader|StreamWriter|HttpClient|WebClient|Environment\.(Exit|GetEnvironmentVariable)|Debug\.Write|Trace\.' ;;
+    csharp:time)   echo 'DateTime(Offset)?\.(Now|UtcNow|Today)|Stopwatch|Task\.Delay|Thread\.Sleep|Environment\.TickCount|TimeProvider|PeriodicTimer|new Timer\(' ;;
+    csharp:random) echo 'new Random\(|Random\.Shared|RandomNumberGenerator|Guid\.NewGuid|System\.Security\.Cryptography' ;;
+    csharp:state)  echo '(^|[[:space:]])static [^(=;]*[]A-Za-z_>] +[A-Za-z_][A-Za-z_0-9]* *(=|;|\{)|Interlocked|ConcurrentDictionary|volatile|lock *\(|ThreadStatic|AsyncLocal' ;;
+
+    gleam:send)   echo 'process\.(send|call|try_call|receive|select)|actor\.(call|send)' ;;
+    gleam:spawn)  echo 'process\.(start|spawn|spawn_unlinked)|actor\.start|supervisor|task\.async' ;;
+    gleam:ets)    echo '(^|[^A-Za-z_])ets[._]|"ets"' ;;
+    gleam:io)     echo 'io\.(print|println|debug)|simplifile|httpc|envoy|shellout|@external|argv' ;;
+    gleam:time)   echo 'gleam/time|birl|system_time|monotonic|process\.sleep|os_time' ;;
+    gleam:random) echo '(int|float)\.random|list\.shuffle|gleam/crypto|strong_random' ;;
+    gleam:state)  echo 'persistent_term|process_dictionary|put_process|actor\.new|actor\.start' ;;
+
+    clojure:send)   echo '\((send|send-off|deliver|promise|chan|>!!|<!!|>!|<!|put!|take!|offer!|poll!)[ )]|core\.async' ;;
+    clojure:spawn)  echo '\((future|future-call|pmap|pcalls|pvalues|go|go-loop|thread|agent)[ )]|\(Thread\.|Executors|ExecutorService' ;;
+    clojure:io)     echo '\((println|print|prn|pr|printf|slurp|spit|read-line|with-open|sh|flush)[ )]|clojure\.java\.(io|shell)|java\.(io|net|nio)|\(io/|\*out\*|\*err\*|\*in\*|System/(out|err|in|getenv|exit)|clj-http' ;;
+    clojure:time)   echo 'System/(currentTimeMillis|nanoTime)|Thread/sleep|\((time|Date\.)[ )]|(Instant|LocalDate|LocalDateTime|ZonedDateTime)/now|clj-time' ;;
+    clojure:random) echo '\((rand|rand-int|rand-nth|shuffle|random-uuid|random-sample)[ )]|java\.util\.Random|SecureRandom|UUID/randomUUID|Math/random|\(Random\.' ;;
+    clojure:state)  echo '\((atom|ref|agent|volatile!|swap!|reset!|swap-vals!|reset-vals!|alter|dosync|commute|ref-set|alter-var-root|set!|defonce)[ )]|\^:dynamic|\(binding |ThreadLocal|\(aset |make-array|into-array' ;;
+
+    haskell:send)   echo 'MVar|TVar|TChan|TQueue|TMVar|(^|[^A-Za-z_])Chan([^A-Za-z_]|$)|atomically|Control\.Concurrent' ;;
+    haskell:spawn)  echo 'forkIO|forkOS|forkFinally|Control\.Concurrent\.Async|mapConcurrently|System\.Process|createProcess|callProcess|readProcess|Control\.Parallel|parMap' ;;
+    haskell:io)     echo 'import +(qualified +)?(System\.(IO|Directory|Environment|Exit)|Network)|(^|[^A-Za-z_.])(putStrLn|putStr|print|getLine|getContents|readFile|writeFile|appendFile|hPutStr|hPutStrLn|interact|getArgs|lookupEnv|exitWith|exitFailure|trace|traceShow)([^A-Za-z_]|$)|(^|[^A-Za-z_.])IO([^A-Za-z_]|$)|unsafePerformIO|unsafeDupablePerformIO' ;;
+    haskell:time)   echo 'getCurrentTime|getPOSIXTime|getZonedTime|getCPUTime|getMonotonicTime|threadDelay|Data\.Time\.Clock|System\.CPUTime|System\.Timeout' ;;
+    haskell:random) echo 'System\.Random|randomRIO|randomIO|newStdGen|getStdGen|getStdRandom|Crypto\.Random' ;;
+    haskell:state)  echo 'IORef|STRef|IOArray|IOUArray|Data\.Array\.(ST|IO|MArray)|Data\.Vector\.(Unboxed\.)?Mutable|unsafe[A-Z][A-Za-z]*|NOINLINE' ;;
+
+    ocaml:send)   echo 'Event\.|Eio\.Stream|Lwt_mvar|Lwt_stream|Lwt\.(wakeup|wait)|Unix\.(send|sendto)|Mutex\.|Condition\.' ;;
+    ocaml:spawn)  echo 'Thread\.create|Domain\.spawn|Unix\.(fork|create_process)|Sys\.command|Lwt\.async|Eio\.Fiber|Fiber\.(fork|both|all)' ;;
+    ocaml:io)     echo '(^|[^A-Za-z_.])(print_(string|endline|newline|int|float|char|bytes)|prerr_[a-z]+|open_in|open_out|input_line|read_line|read_int|output_string|close_in|close_out|stdin|stdout|stderr)|Printf\.(printf|eprintf|fprintf)|Format\.(printf|eprintf|print_[a-z]+)|In_channel|Out_channel|Unix\.|Sys\.(command|getenv|readdir|file_exists|remove|rename|argv)|Filename\.temp|Eio_main|Lwt_io|Cohttp' ;;
+    ocaml:time)   echo 'Sys\.time|Unix\.(time|gettimeofday|sleep|sleepf|localtime)|Ptime_clock|Mtime_clock|Eio\.Time|Lwt_unix\.sleep' ;;
+    ocaml:random) echo '(^|[^A-Za-z_.])Random\.|Stdlib\.Random|Mirage_crypto_rng' ;;
+    ocaml:state)  echo '(^|[^A-Za-z_.])ref[ (]|:=|mutable |Hashtbl\.(create|add|replace|remove)|Array\.(set|fill|blit|sort)|Bytes\.(set|fill|blit)|Atomic\.|Buffer\.(create|add)|Obj\.magic|Domain\.DLS' ;;
+
+    scala:send)   echo 'ActorRef|\.tell\(|\.ask\(|(^|[^A-Za-z_])Actor|BlockingQueue|ConcurrentLinkedQueue|Exchanger|SyncVar|Promise\(|cats\.effect\.std\.Queue| ! ' ;;
+    scala:spawn)  echo 'Future(\.|\()|new Thread\(|ExecutionContext|Executors|IO\.(start|fromFuture)|\.par\b|ForkJoin|scala\.sys\.process|Await\.' ;;
+    scala:io)     echo '(^|[^A-Za-z_.])(println|print)\(|Console\.|StdIn|scala\.io|Source\.from|java\.(io|nio|net)|Files\.|Paths\.|(^|[^A-Za-z_])File\(|Http|sys\.(process|env)|System\.(out|err|in|getenv|exit)|IO\.(println|readLine|print|blocking)' ;;
+    scala:time)   echo 'System\.(currentTimeMillis|nanoTime)|(Instant|LocalDate|LocalDateTime|LocalTime|ZonedDateTime|Clock)\.(now|system)|Thread\.sleep|Deadline\.now|IO\.sleep|scheduleAtFixedRate' ;;
+    scala:random) echo 'scala\.util\.Random|(^|[^A-Za-z_.])Random\.|new Random|SecureRandom|UUID\.randomUUID|ThreadLocalRandom|Math\.random|math\.random' ;;
+    scala:state)  echo '(^|[[:space:]])var |mutable\.|ArrayBuffer|ListBuffer|StringBuilder|Atomic(Integer|Long|Boolean|Reference)|TrieMap|ConcurrentHashMap|@volatile|synchronized|ThreadLocal|sys\.props|System\.getProperty' ;;
   esac
 }
 
@@ -97,6 +167,7 @@ ignore_for() {
   case "$1:$2" in
     go:state) echo 'errors\.New|fmt\.Errorf' ;;   # sentinel errors are fine
     java:state) echo 'static final [^=]*(String|int|long|double|boolean|char|Pattern|Logger) ' ;;   # constants
+    csharp:state) echo 'static readonly [^=]*(string|int|long|double|bool|char|decimal|Regex) |(^|[[:space:]])const ' ;;
   esac
 }
 
@@ -117,13 +188,13 @@ for f in "$@"; do
 
   lang="$(lang_of "$f")"
   if [ "$lang" = unknown ]; then
-    echo "$f: unknown language (supported: .ex .exs .erl .hrl .go .jl .rs .py .java)" >&2
+    echo "$f: unknown language (supported: .ex .exs .erl .hrl .go .jl .rs .py .java .ts .tsx .js .jsx .mjs .cjs .kt .kts .cs .gleam .clj .cljs .cljc .hs .ml .mli .scala .sc)" >&2
     status=1
     continue
   fi
 
   src="${declared_from:-$f}"
-  header="$(grep -hoE 'behest-effects:.*' "$src" | head -n 1 | sed 's/behest-effects://')"
+  header="$(grep -hoE 'behest-effects:.*' "$src" | head -n 1 | sed 's/behest-effects://; s/\*)//; s/-}//')"
   if [ -z "$header" ]; then
     echo "$src: no behest-effects declaration (write 'behest-effects: none' for pure code)" >&2
     status=1
@@ -134,7 +205,7 @@ for f in "$@"; do
   for eff in $EFFECTS; do
     pat="$(pattern_for "$lang" "$eff")"
     [ -n "$pat" ] || continue
-    hits="$(grep -nE "$pat" "$f" | grep -vE '^[0-9]+:[[:space:]]*(#|%|//|/\*|\*)' || true)"
+    hits="$(grep -nE "$pat" "$f" | grep -vE '^[0-9]+:[[:space:]]*(#|%|//|/\*|\*|--|;|\(\*)' || true)"
     ign="$(ignore_for "$lang" "$eff")"
     if [ -n "$ign" ] && [ -n "$hits" ]; then
       hits="$(echo "$hits" | grep -vE "$ign" || true)"

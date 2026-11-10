@@ -1,6 +1,6 @@
 # Behest as Claude skills
 
-The same idea as the [Behest language](../README.md), delivered as Claude skills that work on ordinary Elixir, Erlang, Go, Rust, Python, Java and Julia projects today. No new language and no compiler: the human and Claude build a contract of examples and properties first, Claude asks about every unclear case instead of guessing, and only then implements.
+The same idea as the [Behest language](../README.md), delivered as Claude skills that work on ordinary Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell and OCaml projects today. No new language and no compiler: the human and Claude build a contract of examples and properties first, Claude asks about every unclear case instead of guessing, and only then implements.
 
 | Skill | Purpose |
 | --- | --- |
@@ -12,6 +12,14 @@ The same idea as the [Behest language](../README.md), delivered as Claude skills
 | [`behest-python`](behest-python/SKILL.md) | pytest and Hypothesis contract, Hypothesis-based disagreement check, mypy |
 | [`behest-java`](behest-java/SKILL.md) | JUnit 5 contract with seeded random properties, disagreement template with a small shrinker; jqwik optional |
 | [`behest-julia`](behest-julia/SKILL.md) | `Test`-based contract and disagreement templates (run once on a user's machine) |
+| [`behest-typescript`](behest-typescript/SKILL.md) | Vitest and fast-check contract (TypeScript or JavaScript), fast-check disagreement check, `tsc --strict` |
+| [`behest-kotlin`](behest-kotlin/SKILL.md) | Kotest property contract and disagreement check (templates not run) |
+| [`behest-csharp`](behest-csharp/SKILL.md) | xUnit and FsCheck contract and disagreement check (templates not run) |
+| [`behest-scala`](behest-scala/SKILL.md) | ScalaCheck contract and disagreement check (templates not run) |
+| [`behest-gleam`](behest-gleam/SKILL.md) | gleeunit and qcheck contract and disagreement check (templates not run) |
+| [`behest-clojure`](behest-clojure/SKILL.md) | `clojure.test` and test.check contract and disagreement check |
+| [`behest-haskell`](behest-haskell/SKILL.md) | QuickCheck contract and disagreement check (templates not run) |
+| [`behest-ocaml`](behest-ocaml/SKILL.md) | QCheck contract and disagreement check (templates not run) |
 
 Use `behest-contract-first` together with the one for your language.
 
@@ -24,7 +32,7 @@ The workflow, the freeze-by-hash script, the edit-blocking hook and the effect s
 
 ## Install
 
-You do **not** need the whole Behest repo. The skills are self-contained folders (`behest-contract-first` plus one per language: `behest-elixir`, `behest-erlang`, `behest-go`, `behest-rust`, `behest-python`, `behest-java`, `behest-julia`), and installing means copying them into a Claude Code skills directory:
+You do **not** need the whole Behest repo. The skills are self-contained folders (`behest-contract-first` plus one per language: `behest-elixir`, `behest-erlang`, `behest-go`, `behest-rust`, `behest-python`, `behest-java`, `behest-julia`, `behest-typescript`, `behest-kotlin`, `behest-csharp`, `behest-scala`, `behest-gleam`, `behest-clojure`, `behest-haskell`, `behest-ocaml`), and installing means copying them into a Claude Code skills directory:
 
 | Where | Path | Effect |
 | --- | --- | --- |
@@ -35,7 +43,7 @@ Install `behest-contract-first` plus the one for your language (or all of them).
 
 ### Easiest: ask Claude Code to install them
 
-If you use Claude Code, paste a prompt like this into a session (replace `<LANGUAGES>` with yours, from `elixir`, `erlang`, `go`, `rust`, `python`, `java`, `julia`, and say "project install" if you want them in the current project instead of for all your projects):
+If you use Claude Code, paste a prompt like this into a session (replace `<LANGUAGES>` with yours, from `elixir`, `erlang`, `go`, `rust`, `python`, `java`, `julia`, `typescript`, `kotlin`, `csharp`, `scala`, `gleam`, `clojure`, `haskell`, `ocaml`, and say "project install" if you want them in the current project instead of for all your projects):
 
 ```text
 Install the Behest skills from https://github.com/ayarodionov/Behest for me.
@@ -53,7 +61,7 @@ Claude runs the same steps as Option 1 below and will ask your permission before
 ```sh
 src="$(mktemp -d)"
 git clone --depth 1 --filter=blob:none --sparse https://github.com/ayarodionov/Behest "$src"
-git -C "$src" sparse-checkout set skills/behest-contract-first skills/behest-elixir skills/behest-erlang skills/behest-go skills/behest-rust skills/behest-python skills/behest-java skills/behest-julia
+git -C "$src" sparse-checkout set skills/behest-contract-first skills/behest-elixir skills/behest-erlang skills/behest-go skills/behest-rust skills/behest-python skills/behest-java skills/behest-julia skills/behest-typescript skills/behest-kotlin skills/behest-csharp skills/behest-scala skills/behest-gleam skills/behest-clojure skills/behest-haskell skills/behest-ocaml
 mkdir -p ~/.claude/skills                       # or <project>/.claude/skills
 cp -r "$src"/skills/behest-* ~/.claude/skills/
 rm -rf "$src"
@@ -87,7 +95,7 @@ Then start a new Claude Code session and ask for something the skill covers, for
 - Claude Code (the scripts and the hook run on your machine).
 - `bash`. On Windows use WSL or Git Bash.
 - `python3`, only for the edit-blocking hook.
-- For Erlang: EUnit and PropEr. For Elixir: Mix and StreamData. For Go: Go 1.21 or newer, nothing else. For Rust: cargo and access to crates.io (proptest). For Python: `pip install pytest hypothesis mypy`. For Java: a JDK and JUnit 5 (Maven or Gradle; the example runs with just `javac` and the JUnit console jar). For Julia: the `Test` and `Random` standard libraries (see the language skills).
+- For Erlang: EUnit and PropEr. For Elixir: Mix and StreamData. For Go: Go 1.21 or newer, nothing else. For Rust: cargo and access to crates.io (proptest). For Python: `pip install pytest hypothesis mypy`. For Java: a JDK and JUnit 5 (Maven or Gradle; the example runs with just `javac` and the JUnit console jar). For Julia: the `Test` and `Random` standard libraries. For TypeScript: Node 18 or newer, `vitest` and `fast-check`. For Kotlin: Gradle with Kotest. For C#: the .NET SDK with xUnit and FsCheck. For Scala: sbt with ScalaCheck. For Gleam: `gleeunit` and `qcheck`. For Clojure: `test.check`. For Haskell: GHC with QuickCheck. For OCaml: dune with `qcheck-core` (see the language skills).
 
 ### Update or remove
 
@@ -127,14 +135,14 @@ This writes `.behest-approved` (commit it). `approved.sh check` fails if any app
 
 Claude then cannot edit an approved file or the lock file; it is told to stop and explain instead. To change a contract, you run `approved.sh unlock <file>`, edit, and approve again.
 
-**3. Check effects.** `scripts/effects.sh --declared <contract> <implementation files>` fails if the implementation uses an effect (`send`, `spawn`, `ets`, `io`, `time`, `random`, `state`) the contract did not declare. The language is chosen from the file extension (`.ex .exs .erl .hrl`, `.go`, `.jl`, `.rs`, `.py`, `.java`). It is a grep heuristic, not a proof.
+**3. Check effects.** `scripts/effects.sh --declared <contract> <implementation files>` fails if the implementation uses an effect (`send`, `spawn`, `ets`, `io`, `time`, `random`, `state`) the contract did not declare. The language is chosen from the file extension (`.ex .exs .erl .hrl`, `.go`, `.jl`, `.rs`, `.py`, `.java`, `.ts .tsx .js .jsx .mjs .cjs`, `.kt .kts`, `.cs`, `.scala .sc`, `.gleam`, `.clj .cljs .cljc`, `.hs`, `.ml .mli`). It is a grep heuristic, not a proof.
 
 ## What this does and does not give you
 
 | Behest idea | In the skills |
 | --- | --- |
 | Contract first, human approves | Yes: a workflow step, then frozen by hash |
-| Inline examples and properties | As test files (ExUnit/StreamData, EUnit/PropEr, Go `testing`/`quick`, Rust cargo/proptest, Python pytest/Hypothesis, Java JUnit 5, Julia `Test`), not language syntax |
+| Inline examples and properties | As test files (ExUnit/StreamData, EUnit/PropEr, Go `testing`/`quick`, Rust cargo/proptest, Python pytest/Hypothesis, Java JUnit 5, Julia `Test`, and the property libraries of the other languages), not language syntax |
 | `open` items: ask, don't guess | A workflow rule plus `check_open.sh`; Claude can still ignore it if no hook or CI enforces it |
 | Disagreement check | A procedure and a template; Claude writes the two implementations |
 | Effects visible | Declared in the contract, checked by a heuristic scan |
@@ -155,4 +163,8 @@ What has actually been run:
 - **Tested, with a limit:** the Java skill, with OpenJDK 21 and JUnit 5 (from apt): [`examples/median-java`](examples/median-java/) passes its `check.sh`. Against a naive implementation the contract failed on NaN and on a float overflow (the overflow only via the explicit boundary example; 2000 random inputs missed it, as in Rust). The disagreement template found a lower-median alternative shrunk to `[0.0, 1.0]` and stayed quiet for an agreeing one (the first shrinker stopped at a six-element input because removing one element flips odd/even length; it now also removes pairs). The Java effect patterns were run on good and bad files, and a bug in the `state` pattern was found and fixed that way. **Not tested:** Maven and Gradle builds and the optional jqwik upgrade. Maven Central was blocked where this was written (a proxy policy denial), so the example is compiled with `javac` and run with the JUnit console launcher instead.
 - **Tested on a user's machine (not here):** the Julia skill. The contract template passes (6 examples, empty input, 3000 property checks) and the disagreement template printed a real disagreement. The first runs exposed two shrinker problems, both fixed and re-run: it stopped at a four-element input (removing one element flips odd/even length), and it drifted to a signed-zero difference (`0.0` vs `-0.0`); it now shrinks to the minimal two-element case. The `.jl` effect patterns were run here on good and bad files.
 - **Tested on a user's machine (not here):** [`examples/gcd-elixir`](examples/gcd-elixir/) passes its full `check.sh` with StreamData: 4 properties and 5 tests, 0 failures, plus the open-items, approval and effect checks. The two Elixir *templates* (`behest-elixir/templates/`) also ran there: the contract passes (3 examples and 2 properties), and the disagreement template found and shrank a real disagreement to `[0, -1]` (mean vs lower middle value). The first run exposed weak shrinking (`list_of` removes one element at a time, flipping odd/even length), so the template now generates pairs. Neither was run where they were written (Hex was blocked there).
+- **Tested:** the TypeScript skill, with Node 22, Vitest 5.1, fast-check and `tsc --strict`: the contract template passes (7 tests) against a small `median`, type-checks under `tsc --strict`, and the fast-check disagreement template found and shrank a real disagreement (`[-1, 0]`-style, lower middle value) for a lower-median alternative.
+- **Tested:** the Clojure skill, with Clojure 1.11 and test.check 1.1 (from apt): the contract template passes (8 tests, 15 assertions, 3 properties of 200 cases) and the disagreement template found and shrank a real disagreement to `[0.0 1.0]`.
+- **Effect scan, all new languages:** the patterns for TypeScript, Kotlin, C#, Gleam, Clojure, Haskell, OCaml and Scala were run on one sample file per language containing one line for each effect (all six reported correctly), on a file that declares everything, and on pure code (no false positives); the existing examples' `check.sh` still pass.
+- **Not run (written from documentation):** the Kotlin, C#, Scala, Gleam, Haskell and OCaml templates. Maven Central, NuGet and Hex were not reachable from where they were written, and the Haskell and OCaml toolchains were too slow to install. Their `SKILL.md` files say so. Run the templates once in your own project and fix any API drift before relying on them; if you do, a short report of what changed is welcome.
 - Not tested in a live Claude session: how reliably Claude follows the skill steps. The hook and CI check are what make the key rules mechanical.

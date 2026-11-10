@@ -1,13 +1,13 @@
 ---
 name: behest-contract-first
-description: "Contract-first workflow for Elixir, Erlang, Go, Rust, Python, Java or Julia code that a human will review. Use when asked to implement a function or module whose behavior could be read more than one way, or when the user mentions Behest, contract-first, examples-first, or \"ask before guessing\". Writes examples and properties first, asks about every unclear case, gets approval, then implements."
+description: "Contract-first workflow for Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell or OCaml code that a human will review. Use when asked to implement a function or module whose behavior could be read more than one way, or when the user mentions Behest, contract-first, examples-first, or \"ask before guessing\". Writes examples and properties first, asks about every unclear case, gets approval, then implements."
 ---
 
 # Behest contract-first workflow
 
 The human states the request. You build a **contract** (examples, properties, effects) with them, one concrete question at a time, and only then write the implementation. The contract is what the human reviews; the implementation is yours and may be regenerated at any time.
 
-Language details are in `behest-elixir`, `behest-erlang`, `behest-go`, `behest-rust`, `behest-python`, `behest-java` and `behest-julia`. Use them together with this skill.
+Language details are in `behest-elixir`, `behest-erlang`, `behest-go`, `behest-rust`, `behest-python`, `behest-java`, `behest-julia`, `behest-typescript`, `behest-kotlin`, `behest-csharp`, `behest-scala`, `behest-gleam`, `behest-clojure`, `behest-haskell` and `behest-ocaml`. Use them together with this skill.
 
 ## The rule
 

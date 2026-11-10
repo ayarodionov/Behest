@@ -94,7 +94,7 @@ See the [walkthrough](docs/walkthrough.md) for a full worked example with real o
 - [Comparison](docs/comparison.md): how Behest differs from spec-driven tools, TDD, property testing, design by contract, Dafny and session types
 - [Examples](examples/): sketches in proposed syntax
 - [Prototype](prototype/): inline examples, properties and effect checks as an Elixir macro library you can run today
-- [Skills](skills/): the same workflow as Claude skills for ordinary Elixir, Erlang, Go, Rust, Python, Java and Julia projects, with scripts and a hook that enforce it, no new language needed. You can [install just the skills](skills/README.md#install) without the rest of the repo.
+- [Skills](skills/): the same workflow as Claude skills for ordinary Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell and OCaml projects, with scripts and a hook that enforce it, no new language needed. You can [install just the skills](skills/README.md#install) without the rest of the repo.
 
 ## Discussion
 
