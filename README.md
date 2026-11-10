@@ -103,6 +103,7 @@ These are small runs in which an AI played the human, so they are a first look, 
 - [Walkthrough](docs/walkthrough.md): a worked example of the human-AI loop, from request to approved contract
 - [Design](docs/design.md): goals, syntax, checks, build plan, open questions
 - [Comparison](docs/comparison.md): how Behest differs from spec-driven tools, TDD, property testing, design by contract, Dafny and session types
+- [Suggestions](docs/suggestions.md): fifteen ideas for where to take this next, each with the evidence behind it
 - [Examples](examples/): sketches in proposed syntax
 - [Prototype](prototype/): inline examples, properties and effect checks as an Elixir macro library you can run today
 - [Skills](skills/): the same workflow as Claude skills for ordinary Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell and OCaml projects, in three tiers matched to risk, with scripts and a hook that enforce it, no new language needed. You can [install just the skills](skills/README.md#install) without the rest of the repo.
