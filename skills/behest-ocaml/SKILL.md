@@ -7,6 +7,8 @@ description: "OCaml specifics for the behest-contract-first workflow: QCheck and
 
 Follow `behest-contract-first` for the workflow. This skill covers the OCaml details.
 
+**Status:** the templates were compiled and run with OCaml 4.14 and QCheck 0.21 (from apt), built with `ocamlfind`: the contract passes (2 properties plus the examples) and the disagreement template shrinks to a two-element input such as `[0.; 4.]`. The `dune` stanza below was not run (dune was not available where this was tested). Two QCheck details are handled in the templates: its list shrinker can shrink below the minimum size (to `[]`), and removing one element at a time flips odd/even length and can stop early.
+
 ## Setup
 
 ```sh
@@ -32,7 +34,8 @@ One file per module: `test/<name>_contract.ml`. Start from `templates/median_con
 Run:
 
 ```sh
-dune test
+dune test                 # or, without dune:
+ocamlfind ocamlopt -package qcheck-core -package qcheck-core.runner -linkpkg src/median.ml test/median_contract.ml -o contract && ./contract
 scripts/effects.sh --declared test/<name>_contract.ml src/<name>.ml
 ```
 

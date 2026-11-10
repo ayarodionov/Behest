@@ -28,15 +28,19 @@ let examples =
 let number =
   QCheck.(oneof [ float_range (-1e6) 1e6; oneofl [ 1.7e308; -1.7e308; 0.; -0. ] ])
 
+(* QCheck's list shrinker can shrink below the minimum size, so the properties
+   discard the empty list with [assume]. *)
 let numbers =
   QCheck.(set_print Print.(list float) (list_of_size Gen.(1 -- 12) number))
 
 let order_does_not_matter =
   QCheck.Test.make ~name:"order does not matter" ~count:500 numbers (fun xs ->
+      QCheck.assume (xs <> []);
       median xs = median (List.rev xs))
 
 let between_min_and_max =
   QCheck.Test.make ~name:"is between min and max" ~count:500 numbers (fun xs ->
+      QCheck.assume (xs <> []);
       match median xs with
       | Ok m ->
           List.fold_left Float.min Float.infinity xs <= m
