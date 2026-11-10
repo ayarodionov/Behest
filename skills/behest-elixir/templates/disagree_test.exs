@@ -1,4 +1,6 @@
-# Disagreement check. Throwaway: keep in test/scratch/ and do not commit.
+# Disagreement check. Throwaway: keep in .behest-scratch/ and do not commit.
+#
+#     mix test .behest-scratch/disagree_test.exs
 #
 # Median is the real implementation; Alt below is a deliberately different
 # implementation (other algorithm, or the other plausible reading of the

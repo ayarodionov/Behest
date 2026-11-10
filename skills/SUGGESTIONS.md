@@ -1,32 +1,32 @@
 # Suggestions for the skills
 
-Concrete improvements to the skills, scripts and templates in this folder, collected on 2026-11-10. None of them is done. Ideas about the approach itself are in [docs/suggestions.md](../docs/suggestions.md); what has been tested so far is in [STATUS.md](STATUS.md).
+Concrete improvements to the skills, scripts and templates in this folder, collected on 2026-11-10. Items marked (done) are finished; the rest are not. Ideas about the approach itself are in [docs/suggestions.md](../docs/suggestions.md); what has been tested so far is in [STATUS.md](STATUS.md).
 
 Most items come from watching 36 agent runs follow the skills in the [experiment](../experiment/results/README.md), and from building the examples.
 
-Suggested first: 1, 2, 3 and 4 (cheap, and each fixes something the runs showed), then 5 and 6.
+**Done since this list was written:** 1, 2, 3 and 4 (see the last entries of [STATUS.md](STATUS.md)). Next in line: 5 and 6.
 
 ## A. Fixes the agent runs pointed to
 
-### 1. A scratch directory that can be cleaned up
+### 1. A scratch directory that can be cleaned up (done)
 
 - **Seen:** four agents could not delete their throwaway disagreement tests; a safety check blocked the `rm`. The files stayed in the project.
 - **Do:** have the skill name one scratch directory (git-ignored, outside `test/` so a plain test run does not pick it up) and say to remove it by its full path, or to leave it and report it.
 - **Work:** small.
 
-### 2. Doc examples are either run or not written
+### 2. Doc examples are either run or not written (done)
 
 - **Seen:** several agents put `iex>` examples in `@doc` that no test ran, and said so in their reports.
 - **Do:** one line in the language skills: wire doc examples into the test run (`doctest` in Elixir, `doctest` in Python, and so on) or leave them out.
 - **Work:** small.
 
-### 3. A fixed shape for the final report
+### 3. A fixed shape for the final report (done)
 
 - **Seen:** the reports were good but each laid out differently, which makes them slow to compare.
 - **Do:** give the report five fixed headings: your answers, defaults you did not object to, consequences pinned without asking, checks run, not pinned.
 - **Work:** small.
 
-### 4. Standard-library versions of the Elixir templates
+### 4. Standard-library versions of the Elixir templates (done)
 
 - **Seen:** StreamData could not be installed in the runs, so every agent wrote its own seeded generator, each a little different, none with shrinking.
 - **Do:** add standard-library variants of the contract and disagreement templates, as already exists for the stateful one, with a small shrinker.

@@ -15,13 +15,15 @@ Contracts use ExUnit plus StreamData. If `mix.exs` lacks it, add:
 {:stream_data, "~> 1.0", only: [:dev, :test]}
 ```
 
-Add `test/scratch/` to `.gitignore`; throwaway alternative implementations go there.
+If StreamData cannot be installed (no network, or a project that avoids test dependencies), use the standard-library variants instead: `templates/contract_stdlib_test.exs` and `templates/disagree_stdlib_test.exs`. They use a seeded `:rand` generator and a small shrinker, and need nothing beyond ExUnit.
+
+Add `.behest-scratch/` to `.gitignore`; throwaway alternative implementations go there, outside `test/`, so a plain `mix test` does not run them.
 
 ## Contract file
 
 One file per module: `test/contracts/<module>_contract_test.exs`. Start from `templates/contract_test.exs`.
 
-- Examples are plain `assert`s (or doctests for the simplest ones).
+- Examples are plain `assert`s (or doctests for the simplest ones). Any `iex>` example in a `@doc` must be run: add `doctest MyModule` to a test file, or do not write the example.
 - Properties use `property` and `check all` from `ExUnitProperties`.
 - The first line is the effects declaration, for example `# behest-effects: none`.
 
@@ -40,7 +42,7 @@ When a slow, obviously correct version exists (a plain `Map` for a cache, `Enum`
 
 ## Disagreement check
 
-Copy `templates/disagree_test.exs` to `test/scratch/`, fill in the alternative implementation, and run `mix test test/scratch`. StreamData shrinks a failure to a minimal input, which is exactly the case to show the human. Delete the scratch file when done.
+Copy `templates/disagree_test.exs` (or `disagree_stdlib_test.exs`) to `.behest-scratch/`, fill in the alternative implementation, and run `mix test .behest-scratch/disagree_test.exs` (a file path outside `test/` works when given explicitly). StreamData shrinks a failure to a minimal input, which is exactly the case to show the human. Delete the scratch file when done.
 
 ## Questions that are usually open in Elixir code
 

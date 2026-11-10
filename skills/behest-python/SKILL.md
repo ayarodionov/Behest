@@ -22,6 +22,7 @@ One file per module: `tests/test_<name>_contract.py`. Start from `templates/cont
 - Examples are plain `assert` tests; use `pytest.raises` for invalid input.
 - Properties use Hypothesis `@given`. Hypothesis shrinks failures and remembers them in `.hypothesis/`, so a counterexample found once is replayed.
 - The first line is the effects declaration: `# behest-effects: none`.
+- Examples in docstrings must be run (`python -m pytest --doctest-modules`) or left out.
 - Assert **result types** where they matter: `type(median([1, 2, 3])) is float`. Python's `0 == 0.0` and `True == 1` hide type differences, so compare `type(x)` as well as the value.
 
 Run:

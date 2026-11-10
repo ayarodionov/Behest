@@ -15,7 +15,7 @@ Contracts use EUnit plus PropEr. In `rebar.config`, make sure PropEr is availabl
 {profiles, [{test, [{deps, [proper]}]}]}.
 ```
 
-Add `test/scratch_*` or your scratch directory to `.gitignore`; throwaway alternative implementations go there.
+Add `.behest-scratch/` to `.gitignore`; throwaway alternative implementations go there, outside `test/`, and are compiled from there for the disagreement check.
 
 ## Contract file
 

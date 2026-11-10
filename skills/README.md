@@ -5,7 +5,7 @@ The same idea as the [Behest language](../README.md), delivered as Claude skills
 | Skill | Purpose |
 | --- | --- |
 | [`behest-contract-first`](behest-contract-first/SKILL.md) | The workflow, plus scripts and a hook that enforce it |
-| [`behest-elixir`](behest-elixir/SKILL.md) | ExUnit and StreamData contract, reference-model, disagreement and stateful (GenServer) templates |
+| [`behest-elixir`](behest-elixir/SKILL.md) | ExUnit and StreamData contract, reference-model, disagreement and stateful (GenServer) templates; standard-library variants for when StreamData is not available |
 | [`behest-erlang`](behest-erlang/SKILL.md) | EUnit and PropEr contract, reference-model, disagreement and stateful (`proper_statem`) templates |
 | [`behest-go`](behest-go/SKILL.md) | `testing` and `testing/quick` contract, fuzz-based disagreement check; standard library only |
 | [`behest-rust`](behest-rust/SKILL.md) | cargo tests and proptest contract, proptest-based disagreement check |
