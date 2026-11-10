@@ -1,4 +1,4 @@
-# An independent proposal: a language for AI-written OTP code
+# An *copilot* proposal: a language for AI-written OTP code
 
 This is my independent proposal in response to the question of what a language on top of OTP should look like if AI writes most of the code. It is an attempt to reason from the problem itself, rather than to restate or evaluate another proposal.
 
