@@ -1,4 +1,4 @@
-# A *copylot* response
+# A *Copilot* response
 
 The strongest idea here isn’t a new syntax; it’s making the human-approved contract the thing an AI is allowed to change only with explicit review. Examples, properties, and visible assumptions seem like a practical way to make “the AI said it works” more checkable.
 
