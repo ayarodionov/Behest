@@ -49,3 +49,71 @@ I would first prototype the workflow and compiler feedback around existing OTP c
 The central question is not whether AI can produce code in the language. It is whether developers can more quickly detect wrong assumptions, review changes, and safely maintain the resulting systems. Evaluate the approach on real tasks and with real developers: measure review effort, escaped defects, the quality of tests, and the cost of changing requirements. Compare it with well-tested Erlang or Elixir workflows, not only with unstructured prompting.
 
 The goal is not to make humans approve every line or to claim that generated code is automatically trustworthy. It is to give humans a compact, honest view of the decisions that matter, backed by checks whose guarantees and limits are clear.
+
+## Plan: how to build the tool
+
+The plan follows the principles above: start with a workflow layer over existing Erlang/Elixir code, and introduce a new syntax or compiler only if measurements justify it. Each phase has an exit criterion; if it is not met, stop or change direction rather than proceeding.
+
+### Phase 0: Define the review problem (1-2 weeks)
+
+- Collect 10-20 representative OTP tasks (a gen_server with retries, a supervision tree change, a protocol handler, a rate limiter, etc.), each with a known-good solution and a set of seeded bugs.
+- Write down the review questions a human must answer for each: what does the process accept and send, what state does it own, what happens on crash and restart, where are the timeouts.
+- Record a baseline: how long review takes, and which seeded bugs reviewers catch, using plain Erlang/Elixir plus an AI assistant.
+
+**Exit criterion:** a benchmark task set and baseline numbers exist.
+
+### Phase 1: Behavior summary extractor (3-5 weeks)
+
+- Build a tool, written in Erlang/Elixir, that reads compiled OTP modules and their abstract code and produces a compact **behavior summary** per process: callbacks implemented, messages handled and sent, state shape, supervision strategy and restart intensity, timers and timeouts, linked and monitored processes.
+- Render the summary as readable text and as a diff between two revisions, so reviewers see changes to interfaces, state, and failure handling without reading every line.
+- Mark anything it cannot determine (dynamic dispatch, apply with computed arguments) explicitly as *unknown*, rather than guessing.
+
+**Exit criterion:** on the benchmark, the summary surfaces the majority of seeded interface and failure-handling bugs, and reviewers find it accurate.
+
+### Phase 2: Boundary checks (3-5 weeks)
+
+- Add optional, declared specifications at process boundaries: message types, public API specs, configuration schemas. Reuse Erlang `-spec`/`-type` and Dialyzer or Elixir typespecs where possible, rather than inventing a new type system.
+- Generate runtime validation at boundaries with untyped Erlang/Elixir code and external services, and report these as uncertain, not statically checked.
+- Include checks that a message sent anywhere in the codebase matches a declared message type of the receiver, where the receiver can be determined.
+
+**Exit criterion:** the checks catch incompatible message shapes and return values in the benchmark with an acceptable false-positive rate.
+
+### Phase 3: Test and evidence workflow (4-6 weeks)
+
+- Integrate with ExUnit/EUnit/Common Test and property-based testing (PropEr, StreamData) to provide templates for examples, properties, message-sequence tests, and failure-injection tests.
+- Provide deterministic time control for timer-driven behavior.
+- Produce a **coverage-of-intent report** after a run: which declared behaviors (messages, failure paths, timeouts, restarts) were exercised, and which were not. State explicitly that passing tests are evidence, not proof.
+- When a requirement is ambiguous, the AI-facing part of the tool must emit a question or recorded assumption rather than silently choosing.
+
+**Exit criterion:** generated tests for benchmark tasks detect seeded bugs better than baseline tests, and reports are understood by reviewers.
+
+### Phase 4: AI integration (3-4 weeks)
+
+- Expose the summary, boundary checks, and test reports to an AI coding assistant (for example, through an MCP server or CLI) so it can read the declared behavior, propose changes, and run checks in a loop.
+- Define a review gate: changes touching process interfaces, persistence assumptions, or failure handling are flagged for explicit human approval; other changes need only the summary diff.
+- Ensure compiler errors and runtime traces map back to source locations, and that formatting is automatic.
+
+**Exit criterion:** an AI assistant completes benchmark tasks using the tool, and every flagged change is visible in the review output.
+
+### Phase 5: Evaluate with real developers (4-6 weeks)
+
+- Run a study on real tasks with real developers, comparing: unstructured prompting, a well-tested Erlang/Elixir workflow, and the tool.
+- Measure review time, escaped defects, test quality, and cost of requirement changes.
+- Collect qualitative feedback on where the summaries mislead or omit information.
+
+**Exit criterion:** a written report with results, including negative ones.
+
+### Phase 6: Decide on a new language (go/no-go)
+
+- Only if Phases 1-5 show that remaining problems are caused by existing syntax or compiler limits (for example, behavior cannot be declared concisely or checked soundly), design a thin language or DSL that compiles to Erlang/Elixir (Core Erlang or the BEAM) and keeps full interop.
+- If the tool already delivers the benefits, keep it as tooling and do not add a language.
+
+**Exit criterion:** a documented decision with the evidence behind it.
+
+### Risks and mitigations
+
+- **Summaries give false confidence:** always list unknowns and unchecked areas; never present a summary as a proof.
+- **Static analysis of dynamic OTP code is incomplete:** prefer conservative reporting and runtime validation at the boundaries.
+- **Generated tests are weak or wrong:** require the coverage-of-intent report and seeded-bug evaluation; review tests as code.
+- **Scope creep toward a new language:** gate it behind Phase 6 evidence.
+- **Tool adoption cost:** keep it usable on existing projects with no source changes in Phase 1.
