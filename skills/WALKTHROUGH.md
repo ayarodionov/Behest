@@ -14,11 +14,11 @@ cp -r skills/behest-* .claude/skills/
 
 and add the edit-blocking hook from the [skills README](README.md#enforcement-optional-recommended). `S` below stands for `.claude/skills/behest-contract-first`.
 
-## 1. You make a request; Claude drafts a contract, not code
+## 1. You make a request; Claude drafts a contract and sends one message
 
 > **You:** I need a median function in Erlang. Module `median`, function `median/1`, takes a list of numbers.
 
-Claude does not write the function. It writes the contract first (`test/median_contract_tests.erl`): one example, two properties, and the effects declaration at the top.
+Claude does not write the function. It first says which tier it is using ("**Tier: standard**, because this is a library function other code will call"; see [tiers](README.md#tiers)), then writes the contract (`test/median_contract_tests.erl`): one example, two properties, and the effects declaration at the top.
 
 ```erlang
 %% behest-effects: none
@@ -30,26 +30,47 @@ order_does_not_matter_test_() -> prop_test(prop_order()).
 between_min_and_max_test_() -> prop_test(prop_bounds()).
 ```
 
-It also notices something the request did not say and records it instead of choosing:
+Everything the request did not say goes into `OPEN.md`, each point with a proposed answer, sorted into what to ask and what to assume:
 
 ```
 $ cat OPEN.md
 # Open items
 
-- [ ] Empty list: return an error, or a default such as 0?
+## Questions
+
+- [ ] median([]) -> {error, empty}, or a default such as {ok, 0}?
+
+## Defaults
+
+- [ ] median([5.0]) -> {ok, 5.0}
+- [ ] the input order does not matter
+- [ ] a list containing a non-number crashes (no special error)
 $ S/scripts/check_open.sh
-3:- [ ] Empty list: return an error, or a default such as 0?
-unresolved open items in OPEN.md: ask the human, add each answer to the contract, then delete the item
+5:- [ ] median([]) -> {error, empty}, or a default such as {ok, 0}?
+9:- [ ] median([5.0]) -> {ok, 5.0}
+10:- [ ] the input order does not matter
+11:- [ ] a list containing a non-number crashes (no special error)
+unresolved open items in OPEN.md: show them to the human (questions asked, defaults listed), add each answer to the contract, then delete the item
 (exit 1)
 ```
 
-> **Claude:** Before I write any code: what should `median([])` do? I could return `{error, empty}`, or a default like `{ok, 0}`. Which do you want?
+Then Claude sends one message with all of it:
 
-## 2. You answer with one word; it becomes an example
+> **Claude:** Before I write any code.
+>
+> **Question** (my proposal first): 1. `median([])` -> `{error, empty}`, or a default such as `{ok, 0}`?
+>
+> **I will also assume, unless you object:** `median([5.0])` -> `{ok, 5.0}`; the input order does not matter; a list containing a non-number crashes, with no special error.
+>
+> Reply `ok` to accept every proposal and approve the contract, or give the numbers you want changed.
 
-> **You:** An error.
+Two choices are missing from that list, because Claude did not think of them: what an even-length list gives, and whether the result is always a float. Steps 5 and 6 show how they are caught anyway.
 
-Claude adds `empty_list_test` (`?assertEqual({error, empty}, median:median([]))`), deletes the item from `OPEN.md`, and the gate opens:
+## 2. You answer in one line
+
+> **You:** ok
+
+Claude adds `empty_list_test` (`?assertEqual({error, empty}, median:median([]))`), deletes the items from `OPEN.md`, and the gate opens:
 
 ```
 $ S/scripts/check_open.sh
@@ -57,9 +78,9 @@ no open items
 (exit 0)
 ```
 
-## 3. You approve; the contract is frozen
+## 3. The contract is frozen
 
-> **You:** Looks right. Approved.
+Your `ok` approved the contract with the answers folded in, so Claude records it:
 
 ```
 $ S/scripts/approved.sh approve test/median_contract_tests.erl
@@ -87,7 +108,7 @@ effects match declarations (heuristic scan)
 (exit 0)
 ```
 
-Everything is green, and the contract is still incomplete. This is where the skill earns its keep.
+Everything is green, and the contract is still incomplete. This contract has no reference model (a median is its own simplest description), so the standard tier calls for the disagreement check.
 
 ## 5. The disagreement check, round 1: a gap you did not know about
 
@@ -171,9 +192,20 @@ $ S/scripts/effects.sh --declared test/median_contract_tests.erl src/median.erl
 effects match declarations (heuristic scan)
 ```
 
-> **Claude:** Done. The contract has 4 examples and 3 properties, frozen and passing. You answered three questions: empty list is an error, results are always floats, even length means the mean of the middle two. The disagreement check found nothing more over 1000 random inputs, but that only covers inputs the generator reaches, and two implementations from the same model can share a blind spot. Effects: none.
+> **Claude:** Done. The contract has 4 examples and 3 properties, frozen and passing. You answered three questions: empty list is an error (my proposal), results are always floats, even length means the mean of the middle two. Defaults you did not object to: a single element is its own median, order does not matter, non-numbers crash. The disagreement check found nothing more over 1000 random inputs, but that only covers inputs the generator reaches, and two implementations from the same model can share a blind spot. Effects: none.
 
 You read about 40 lines of contract (the rest of the test file is helpers) and answered three questions. The implementation is Claude's to regenerate at any time.
+
+## 8. The mutation check: is the contract tight?
+
+The last check makes one small change at a time to the implementation and reruns the contract. A change the contract does not notice is a missing example.
+
+```
+$ S/scripts/mutate.py --test "<compile and run the contract>" src/median.erl
+11 of 11 mutants killed, 0 survived (heuristic)
+```
+
+It was not always clean. In the Python and Go versions of this example, changing the middle index from `n / 2` to `n / 3` survived: no example had an odd length of five or more, and "order does not matter" and "between min and max" hold for any fixed position. That is why every `median` contract in this repository now has a five-element example and a property that at least half the values are at or below the median and at least half at or above (the finished contract here has 5 examples and 4 properties).
 
 ## When the logic must stay pure: the rate limiter
 
@@ -229,5 +261,7 @@ The same loop works in Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Sc
 
 ## What this walkthrough does not show
 
-- **A live Claude session.** The scripts, tests and counterexamples are real; I did not record Claude following the skill unprompted. How reliably it asks instead of guessing depends on the model and the prompt, which is why the hook, `check_open.sh` and a CI `approved.sh check` exist.
+- **A live session with a person.** The scripts, tests and counterexamples are real; the dialogue is written to show what the skill asks for. In the [experiment](../experiment/results/README.md), AI agents given only the skill text did follow it: they drafted a contract, sent one message with questions and defaults, waited, froze the contract and ran the checks. A person answering has not been recorded. How reliably Claude follows the steps depends on the model and the prompt, which is why the hook, `check_open.sh` and a CI `approved.sh check` exist.
+- **The light tier.** For a small helper Claude would skip the freeze and the later checks: examples in an ordinary test file, the same one message, then the code.
+- **A process.** For a `gen_server` the contract is built around a model and random command sequences; see [`examples/ttl-cache-erlang`](examples/ttl-cache-erlang/).
 - **Proof of correctness.** The contract covers the cases and properties someone thought of, plus what the random search reached. It narrows the gap between intent and code; it does not close it.

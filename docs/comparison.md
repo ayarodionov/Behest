@@ -8,7 +8,7 @@ Behest's bet is a middle path: a contract that is **short, executable and frozen
 
 | Approach | The human reviews | Checked by | Stops silent guessing? | Finds gaps in the spec? | Cost to the human |
 | --- | --- | --- | --- | --- | --- |
-| **Behest** | A short contract: examples, properties, effects | Running tests, hash-freeze, effect scan | Yes: `open` items fail the build | Yes: disagreement check | Low; judges concrete cases |
+| **Behest** | A short contract: examples, properties, effects, and the list of choices behind them | Running tests, hash-freeze, effect scan | Yes: every open point is shown with a proposal, and open items fail the build | Yes: reference model, disagreement check, mutation check | One message to read and one reply for small tasks; more for strict work |
 | Prompting and rules files (`CLAUDE.md`, Cursor rules) | The code | Nothing automatic | No | No | Reading all the code |
 | Spec-driven tools (Spec Kit, Kiro, Tessl) | Markdown requirements, design, tasks | Mostly the AI itself | Partly (clarification steps) | No | Reading long documents |
 | TDD or BDD with AI (unit tests, Gherkin) | The tests | Running tests | No | No | Moderate |
@@ -65,7 +65,7 @@ Session types check the *conversation* between processes. Behest's language desi
 
 - **It is not novel in its parts.** Examples, properties, contracts, effect systems and consistency checks all exist. The contribution, if any, is the combination aimed at one problem: a human reviewing AI-written code.
 - **It is not proof.** The disagreement check only finds gaps that the generator reaches, and two implementations written by the same model can share a blind spot.
-- **It has not been measured.** I have run the skills on small examples (median, rate limiter, gcd), where they found real bugs, but there is no study showing that people review less or err less. Treat the design as a hypothesis.
+- **It has barely been measured.** A small [experiment](../experiment/results/README.md) with AI agents, and an AI playing the human, found a real gain on tasks where the human wants unusual things and almost none where the conventional answer is wanted. There is no study with people showing that they review less or err less. Treat the design as a hypothesis with a first data point.
 - **The language is a design, not a compiler.** What works today is the Elixir prototype and the skills for Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell and OCaml (the Elixir and Julia templates each ran on a user's machine, not in the environment where they were written).
 
 *Sources for other tools' behaviour: Martin Fowler's article above, the Clover and Dafny papers linked above, and general knowledge of Eiffel, SPARK and the property-testing libraries. I did not re-verify Eiffel, SPARK, Verus or Lean for this page, and the tools move quickly, so check their current documentation.*

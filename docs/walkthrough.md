@@ -2,6 +2,8 @@
 
 A worked example of how Behest is meant to be used, with `median` as the task. The human writes a few lines; the AI asks about whatever the contract leaves open; the human answers with examples. The human never writes the implementation.
 
+This page shows the loop as the **language** would run it, using the Elixir prototype. For the same loop on ordinary code with the Claude skills, including the questions-and-defaults message and the mutation check added after the experiments, see the [skills walkthrough](../skills/WALKTHROUGH.md).
+
 Steps 1, 2 and 4 run in the [prototype](../prototype/) today. Step 3 (the disagreement check) is design only; the output shown comes from a throwaway script, not from the prototype.
 
 ## 1. The human writes a request and a first contract

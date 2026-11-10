@@ -6,7 +6,7 @@ The name comes from "at someone's behest": the human asks, the AI builds.
 
 **Origin:** I asked Claude (Anthropic's AI) what a language on top of OTP should look like if AI writes most of the code. This design is what it proposed; I'm sharing it to get the community's view. Fittingly, the project itself was made the way Behest proposes: a human asked, the AI built.
 
-> Status: design proposal with a runnable [Elixir prototype](prototype/) of the contracts. No compiler yet. Feedback welcome. See [Discussion](#discussion).
+> Status: a design proposal for the language, with a runnable [Elixir prototype](prototype/) of the contracts and no compiler yet. The workflow itself can be used today as [Claude skills](skills/) for 15 languages, and a first [experiment](experiment/results/README.md) has measured what it gains and costs. Feedback welcome. See [Discussion](#discussion).
 
 ## Why
 
@@ -75,6 +75,17 @@ People are bad at writing complete specs but good at judging a concrete case, so
 
 See the [walkthrough](docs/walkthrough.md) for a full worked example with real output.
 
+## What trying it showed
+
+The workflow was built as [Claude skills](skills/) and run by AI agents on small tasks, with and without the skills ([results and limits](experiment/results/README.md)). Four things changed how I see the idea:
+
+- **The gain comes from showing every choice before the code is written.** Asking is only part of it. In the runs, about half of the unusual things the human wanted were caught in a plain list of "I will also assume, unless you object", not by a question. So the skills now sort open points into a few questions and a list of defaults, each with a proposal, in one message.
+- **A plain prompt is already good when the human wants the conventional thing.** It got 63 of 69 decisions right against 69 of 69, at a fifth of the cost. Where the human wants something unusual it delivered the conventional solution, and after a round of corrections still missed the choices it had never mentioned (46 of 52 against 52 of 52).
+- **The ceremony has to match the risk.** The skills have three tiers. The light tier (show the choices, write example tests, implement) cost the same agent time as a plain prompt and got 26 of 26.
+- **The strongest results so far are on existing code.** Writing contracts for two of my own Elixir libraries found real bugs in both.
+
+These are small runs in which an AI played the human, so they are a first look, not proof. What they do not yet measure is a real person's time and attention.
+
 ## Core features
 
 | Feature | What it gives the reviewer |
@@ -94,8 +105,8 @@ See the [walkthrough](docs/walkthrough.md) for a full worked example with real o
 - [Comparison](docs/comparison.md): how Behest differs from spec-driven tools, TDD, property testing, design by contract, Dafny and session types
 - [Examples](examples/): sketches in proposed syntax
 - [Prototype](prototype/): inline examples, properties and effect checks as an Elixir macro library you can run today
-- [Skills](skills/): the same workflow as Claude skills for ordinary Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell and OCaml projects, with scripts and a hook that enforce it, no new language needed. You can [install just the skills](skills/README.md#install) without the rest of the repo.
-- [Experiment](experiment/): a kit for testing whether the approach helps: three underspecified tasks, the human's answers, hidden checks scored per decision. A first pilot of 18 runs is recorded, with its limits.
+- [Skills](skills/): the same workflow as Claude skills for ordinary Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell and OCaml projects, in three tiers matched to risk, with scripts and a hook that enforce it, no new language needed. You can [install just the skills](skills/README.md#install) without the rest of the repo.
+- [Experiment](experiment/): a kit for testing whether the approach helps: three underspecified tasks, the human's answers, hidden checks scored per decision. Runs with and without the skills are recorded, with their limits.
 
 ## Discussion
 
