@@ -18,7 +18,10 @@ Usage:
 
 Works on text, so it is language-independent: it swaps comparison, arithmetic and
 logical operators (only where they have spaces around them), true/false, and the
-integers 0, 1 and 2. Mutants that no longer compile count as killed, so the score
+integers 0, 1 and 2. For code written as a chain of steps it also deletes one step at
+a time (a line starting with `|>`, or with `.name(` in a method chain), and for
+regular expressions it changes character classes: `[^...]` to `[...]` and back, one
+member dropped (`[a-z0-9_]` to `[a-z0-9]`), and `]+` to `]*`. Mutants that no longer compile count as killed, so the score
 flatters the contract a little. Text inside triple-quoted blocks (Elixir @doc, Python
 docstrings) is skipped: it is documentation, not behaviour. A heuristic, not a proof.
 
@@ -54,6 +57,8 @@ SWAPS = [
 ]
 SWAPS = [(re.compile(p), r) for p, r in SWAPS]
 
+DELETE = object()  # marks a mutant that removes the whole line
+
 COMMENT = re.compile(r"^\s*(#|%|//|/\*|\*|--|;|\(\*)")
 SKIP_LINE = re.compile(r"behest-effects|^\s*(import|from|use|using|package|module|namespace|require|open|include)\b|^\s*-(module|export|include)")
 
@@ -61,6 +66,34 @@ SKIP_LINE = re.compile(r"behest-effects|^\s*(import|from|use|using|package|modul
 def in_string(line, pos):
     """Crude: an odd number of double quotes before pos means we are inside a string."""
     return line.count('"', 0, pos) % 2 == 1
+
+
+STEP = re.compile(r"^\s*(\|>|\.[A-Za-z_][A-Za-z_0-9]*\()")
+CLASS = re.compile(r"\[(\^?)((?:\\.|[^\]\\\n])+)\]([+*]?)")
+RANGE = re.compile(r"[a-z]-[a-z]|[A-Z]-[A-Z]|[0-9]-[0-9]")
+REGEX_LINE = re.compile(r"""~[rR]|[Rr]egex|\bre\.|Pattern|=~|match|replace|split|scan|r["']|/\[""")
+MEMBER = re.compile(r"\\.|[A-Za-z0-9]-[A-Za-z0-9]|.")
+
+
+def class_mutants(path, n, line):
+    """Mutants of regex character classes on one line: (path, n, start, end, replacement)."""
+    out = []
+    if not REGEX_LINE.search(line):
+        return out  # no sign of a regular expression: [i-j] here is an index, not a class
+    for m in CLASS.finditer(line):
+        neg, body, quant = m.group(1), m.group(2), m.group(3)
+        if not RANGE.search(body) or ", " in body:
+            continue  # not a character class (a list literal, an index, ...)
+        def emit(new_neg, new_body, new_quant):
+            out.append((path, n, m.start(), m.end(), "[" + new_neg + new_body + "]" + new_quant))
+        emit("" if neg else "^", body, quant)
+        members = MEMBER.findall(body)
+        if len(members) > 1:
+            for i in range(len(members)):
+                emit(neg, "".join(members[:i] + members[i + 1:]), quant)
+        if quant == "+":
+            emit(neg, body, "*")
+    return out
 
 
 def find_mutants(path, text):
@@ -77,12 +110,18 @@ def find_mutants(path, text):
                 if in_string(line, m.start()):
                     continue
                 mutants.append((path, n, m.start(), m.end(), repl))
+        mutants += class_mutants(path, n, line)
+        if STEP.match(line) and not line.rstrip().endswith(";"):
+            mutants.append((path, n, 0, len(line), DELETE))
     return mutants
 
 
 def apply(text, mutant):
     _, n, start, end, repl = mutant
     lines = text.split("\n")
+    if repl is DELETE:
+        removed = lines.pop(n)
+        return "\n".join(lines), "(step deleted) " + removed.strip()
     lines[n] = lines[n][:start] + repl + lines[n][end:]
     return "\n".join(lines), lines[n]
 
@@ -160,7 +199,7 @@ def main():
     total_found = len(mutants)
     if total_found > args.max:
         random.Random(args.seed).shuffle(mutants)
-        mutants = sorted(mutants[: args.max])
+        mutants = sorted(mutants[: args.max], key=lambda m: (m[0], m[1], m[2], m[3]))
 
     if args.list:
         for m in mutants:

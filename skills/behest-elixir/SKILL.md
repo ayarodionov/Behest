@@ -60,3 +60,15 @@ Ask these before guessing; each one hides a silent choice:
 - No `Process.sleep` in contract tests.
 - Write the messages and replies as examples: for each call, input and expected reply, including the "rejected" and "unknown client" cases.
 - Declare `send`, `spawn` or `ets` in the contract if the implementation needs them; adding one later is a contract change that needs the human's approval.
+
+### A real process: the stateful contract
+
+When the thing under test is a `GenServer` whose replies depend on what came before, start from `templates/stateful_test.exs`. It needs only the standard library (no StreamData), and it was run against a `TtlCache` GenServer: 7 tests pass, and a seeded off-by-one in expiry was caught and shrunk to `[{:put, :a, 4, 3}, {:advance, 3}, :size]`.
+
+- **A model** is the reference: `model(command, state) -> {reply, state}` over a small map, part of the contract.
+- **The property** runs 300 seeded random command sequences against the real process; every reply must equal the model's. A failing sequence is shrunk by removing commands one at a time.
+- **Time is a command, not an effect.** The server gets its clock as a function (`clock: fn -> ... end`); the contract keeps the time in a `:counters` cell and has an `{:advance, ms}` command. The effects line is `send, spawn`, so reading the real clock or starting a timer fails the scan.
+- **Examples are scripts** of `{command, expected_reply}` in order, each also checked against the model.
+- **`mix test --only cases`** prints the three most eventful of 200 generated sequences, with the model's reply at every step, for the approval message.
+
+With StreamData available you can generate the command list with `list_of(one_of([...]))` instead and get its shrinking; the model, scripts and clock stay the same.

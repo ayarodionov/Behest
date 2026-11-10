@@ -66,3 +66,14 @@ Ask these before guessing; each one hides a silent choice:
 - No `timer:sleep` in contract tests.
 - Write the messages and replies as examples: for each call, input and expected reply, including the rejected and unknown cases.
 - Declare `send`, `spawn` or `ets` in the contract if the implementation needs them; adding one later is a contract change that needs the human's approval.
+
+### A real process: the stateful contract
+
+When the thing under test is a `gen_server` whose replies depend on what came before, start from `templates/statem_tests.erl` (the contract of [`examples/ttl-cache-erlang`](../examples/ttl-cache-erlang/), which runs):
+
+- **A model** is the reference: a pure function `model(Command, State) -> {Reply, State}` over a small map. It is part of the contract and short enough to read.
+- **The property** uses `proper_statem`: random command sequences run against the real process, and every reply must equal the model's. PropEr shrinks a failure to the shortest sequence, for example `put(a, 6, ttl 1); advance 1; get(a)` for an off-by-one in expiry.
+- **Time is a command, not an effect.** The server gets its clock as a fun; the contract keeps the time in a counter and has an `advance` command. The effects line is `send, spawn`, so an implementation that reads the real clock or starts a timer fails the scan.
+- **Examples are scripts** of `{Command, ExpectedReply}` in order, each also checked against the model so an example cannot contradict it.
+- **`cases/0`** prints generated sequences with the model's reply at every step for the approval message. Random sequences are mostly dull (misses on an empty cache), so it generates 200 and prints the three in which the most happens.
+- Weight the generator (`frequency`) towards the commands that build state, and use few keys and short lifetimes so that collisions and expiries are common.
