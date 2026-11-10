@@ -27,6 +27,7 @@ Use `behest-contract-first` together with the one for your language.
 - **[Examples](examples/):** finished Erlang, Elixir, Go, Rust, Python and Java projects you can run, including a `gen_server` with a stateful contract.
 - **[Experiment](../experiment/):** runs comparing the skills with a plain prompt, with results and limits.
 - **[Status](STATUS.md):** the full log of what was tested, where, and what each test found.
+- **[Suggestions](SUGGESTIONS.md):** 21 concrete improvements to the skills and tools, not yet done.
 
 ## How a session goes
 

@@ -1,6 +1,6 @@
 # Suggestions for the general idea
 
-Ideas for where Behest could go next, collected on 2026-11-10 after the [experiments](../experiment/results/README.md). None of them is built. Each says what it is, why the evidence points that way, and roughly how much work it would be.
+Ideas for where Behest could go next, collected on 2026-11-10 after the [experiments](../experiment/results/README.md). None of them is built. Improvements to the skills and tools themselves are listed separately in [skills/SUGGESTIONS.md](../skills/SUGGESTIONS.md). Each says what it is, why the evidence points that way, and roughly how much work it would be.
 
 They start from the main thing the experiments showed: **the gain comes from showing the human every choice the request left open, with a proposal, before the code is written.** Freezing and the later checks add assurance, but the list of choices is what changed the scores.
 
