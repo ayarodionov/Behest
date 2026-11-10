@@ -63,6 +63,28 @@ Two plain runs said they were done and attached questions to that same message. 
 - `effects.sh` reported the pure `IO.iodata_to_binary` as `io`. It now ignores that and two similar conversions.
 - Four agents could not delete their scratch disagreement tests (a safety check blocked the command), and several noted that the doc examples they wrote were not run as doctests.
 
+## Rerun after cutting questions, 2026-11-10: 3 runs
+
+After the pilot the workflow was changed: every open point gets a proposed answer, only points an ordinary caller could hit and reasonable people would answer differently are asked (five at most), the rest are listed as defaults, and questions, defaults and the approval request go in one message. One `behest` run per task was repeated with the new skill text, same instructions and same answer sheets.
+
+| Task | Core | Decisions right | Questions asked | Defaults listed | Human replies | Agent seconds | Tokens (thousands) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| slug | 4/4 | 8/8 | 5 | 9 | 1 ("ok") | 154 | 105 |
+| intervals | 6/6 | 6/6 | 4 | 6 | 1 ("ok") | 103 | 107 |
+| duration | 7/7 | 9/9 | 5 | 9 | 1 ("ok, except 3") | 149 | 113 |
+
+| | plain (pilot, 9 runs) | behest before (pilot, 9 runs) | behest after (3 runs) |
+| --- | --- | --- | --- |
+| Decisions right | 63 of 69 | 69 of 69 | 23 of 23 |
+| Questions per run, mean | 1.2 | 10.1 | 4.7 |
+| Human replies per run, mean | 0.1 | 1.6 | 1.0 |
+| Agent seconds per run, mean | 38 | 202 | 135 |
+
+- **Questions fell by about half and no decision was lost.** In two runs every proposal matched the answer sheet and the human's whole reply was "ok". In the third the AI proposed rejecting upper case and spaces; the human changed that one number. That is the case the questions exist for.
+- **Decisions that moved into the defaults list were all conventional ones** (an empty list gives an empty list, digits are kept, runs of punctuation collapse) and all matched the sheet. None of the runs asked a follow-up question after implementing; exotic inputs were listed under "not pinned" in the final report.
+- **The cost is still well above plain:** about three and a half times the agent time, where it was five times.
+- **Limits:** three runs, the same tasks and the same non-blind AI "human" as the pilot; a default that happened to be wrong would only be caught if the human reads the list, which here was an AI comparing it with the sheet. With these tasks the proposals were right nearly every time, so the rerun shows the questions can be cut safely here, not that the sorting rule is right in general.
+
 ## Scorer checks (not AI runs)
 
 | Task | Solution | Core | Decisions right | Wrong decisions |
