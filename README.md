@@ -105,6 +105,7 @@ These are small runs in which an AI played the human, so they are a first look, 
 - [Comparison](docs/comparison.md): how Behest differs from spec-driven tools, TDD, property testing, design by contract, Dafny and session types
 - [Suggestions](docs/suggestions.md): fifteen ideas for where to take this next, each with the evidence behind it
 - Outside views: a [response](docs/copilot-response.md) and an [independent proposal](docs/copilot-independent-proposal.md) written by GitHub Copilot, and [Claude's review](docs/claude-review-of-copilot.md) of both
+- A second outside view: a [response](docs/chatgpt-response.md) and an [independent proposal](docs/chatgpt-independent-proposal.md) written by ChatGPT, and [Claude's review](docs/claude-review-of-chatgpt.md) of both
 - [Examples](examples/): sketches in proposed syntax
 - [Prototype](prototype/): inline examples, properties and effect checks as an Elixir macro library you can run today
 - [Skills](skills/): the same workflow as Claude skills for ordinary Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell and OCaml projects, in three tiers matched to risk, with scripts and a hook that enforce it, no new language needed. You can [install just the skills](skills/README.md#install) without the rest of the repo.
