@@ -5,7 +5,7 @@ The same idea as the [Behest language](../README.md), delivered as Claude skills
 | Skill | Purpose |
 | --- | --- |
 | [`behest-contract-first`](behest-contract-first/SKILL.md) | The workflow, plus scripts and a hook that enforce it |
-| [`behest-elixir`](behest-elixir/SKILL.md) | ExUnit and StreamData contract, reference-model, disagreement and stateful (GenServer) templates; standard-library variants for when StreamData is not available |
+| [`behest-elixir`](behest-elixir/SKILL.md) | ExUnit contract, reference-model, disagreement and stateful (GenServer) templates, with StreamData, [PropEr](https://github.com/proper-testing/proper) or the standard library as the property engine |
 | [`behest-erlang`](behest-erlang/SKILL.md) | EUnit and PropEr contract, reference-model, disagreement and stateful (`proper_statem`) templates |
 | [`behest-go`](behest-go/SKILL.md) | `testing` and `testing/quick` contract, fuzz-based disagreement check; standard library only |
 | [`behest-rust`](behest-rust/SKILL.md) | cargo tests and proptest contract, proptest-based disagreement check |
@@ -116,7 +116,7 @@ Then start a new Claude Code session and ask for something the skill covers, for
 - Claude Code (the scripts and the hook run on your machine).
 - `bash`. On Windows use WSL or Git Bash.
 - `python3`, only for the edit-blocking hook.
-- For Erlang: EUnit and PropEr. For Elixir: Mix and StreamData. For Go: Go 1.21 or newer, nothing else. For Rust: cargo and access to crates.io (proptest). For Python: `pip install pytest hypothesis mypy`. For Java: a JDK and JUnit 5 (Maven or Gradle; the example runs with just `javac` and the JUnit console jar). For Julia: the `Test` and `Random` standard libraries. For TypeScript: Node 18 or newer, `vitest` and `fast-check`. For Kotlin: Gradle with Kotest. For C#: the .NET SDK with xUnit and FsCheck. For Scala: sbt with ScalaCheck. For Gleam: `gleeunit` and `qcheck`. For Clojure: `test.check`. For Haskell: GHC with QuickCheck. For OCaml: dune with `qcheck-core` (see the language skills).
+- For Erlang: EUnit and PropEr. For Elixir: Mix, and StreamData or PropEr (or neither, with the standard-library templates). For Go: Go 1.21 or newer, nothing else. For Rust: cargo and access to crates.io (proptest). For Python: `pip install pytest hypothesis mypy`. For Java: a JDK and JUnit 5 (Maven or Gradle; the example runs with just `javac` and the JUnit console jar). For Julia: the `Test` and `Random` standard libraries. For TypeScript: Node 18 or newer, `vitest` and `fast-check`. For Kotlin: Gradle with Kotest. For C#: the .NET SDK with xUnit and FsCheck. For Scala: sbt with ScalaCheck. For Gleam: `gleeunit` and `qcheck`. For Clojure: `test.check`. For Haskell: GHC with QuickCheck. For OCaml: dune with `qcheck-core` (see the language skills).
 
 ### Update or remove
 

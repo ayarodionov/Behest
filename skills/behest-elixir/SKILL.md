@@ -1,6 +1,6 @@
 ---
 name: behest-elixir
-description: "Elixir specifics for the behest-contract-first workflow: ExUnit and StreamData contract files, effect declarations, and a disagreement-test template. Use together with behest-contract-first when working in an Elixir or Mix project."
+description: "Elixir specifics for the behest-contract-first workflow: ExUnit contract files with StreamData, PropEr or the standard library, effect declarations, and disagreement and stateful (GenServer) templates. Use together with behest-contract-first when working in an Elixir or Mix project."
 ---
 
 # Behest for Elixir
@@ -9,19 +9,39 @@ Follow `behest-contract-first` for the workflow. This skill covers the Elixir de
 
 ## Setup
 
-Contracts use ExUnit plus StreamData. If `mix.exs` lacks it, add:
+Contracts are ExUnit tests. The properties can be run by one of three engines; pick one per project and use its templates throughout.
 
-```elixir
-{:stream_data, "~> 1.0", only: [:dev, :test]}
-```
+| Engine | Use when | Dependency | Templates |
+| --- | --- | --- | --- |
+| **StreamData** (default) | Nothing else is in use | `{:stream_data, "~> 1.0", only: [:dev, :test]}` | `contract_test.exs`, `disagree_test.exs`, `reference_test.exs` |
+| **[PropEr](https://github.com/proper-testing/proper)** | The project or team already uses PropEr (often alongside Erlang code), or you want PropEr's stateful testing (`proper_statem`) | `{:proper, "~> 1.5", only: :test}` | `contract_proper_test.exs`, `disagree_proper_test.exs`, `stateful_proper_test.exs` |
+| **Standard library only** | No test dependencies can be installed | none | `contract_stdlib_test.exs`, `disagree_stdlib_test.exs`, `stateful_test.exs` |
 
-If StreamData cannot be installed (no network, or a project that avoids test dependencies), use the standard-library variants instead: `templates/contract_stdlib_test.exs` and `templates/disagree_stdlib_test.exs`. They use a seeded `:rand` generator and a small shrinker, and need nothing beyond ExUnit.
+The standard-library variants use a seeded `:rand` generator and a small shrinker. The PropEr and StreamData variants shrink properly and print the seed.
 
 Add `.behest-scratch/` to `.gitignore`; throwaway alternative implementations go there, outside `test/`, so a plain `mix test` does not run them.
 
+## PropEr from Elixir
+
+The PropEr templates call PropEr directly, with no wrapper. Its Erlang macros are ordinary function calls underneath:
+
+| Erlang | Elixir |
+| --- | --- |
+| `?FORALL(X, Type, Prop)` | `:proper.forall(type, fn x -> prop end)` |
+| `?LET(X, Type, Expr)` | `:proper_types.bind(type, fn x -> expr end, false)` |
+| `?SUCHTHAT(X, Type, Cond)` | `:proper_types.add_constraint(type, fn x -> cond end, false)` |
+| `?WHENFAIL(Action, Prop)` | `:proper.whenfail(fn -> action end, fn -> prop end)`: **both** arguments are functions |
+| `proper:quickcheck(P, Opts)` | `:proper.quickcheck(p, [{:numtests, 500}, {:to_file, :user}])`, then `:proper.counterexample()` for the shrunk input |
+
+- Generators come from `:proper_types` (`list/1`, `non_empty/1`, `integer/0`, `integer/2`, `float/0`, `oneof/1`, `frequency/1`, `vector/2`). A tuple or list with generators inside is itself a generator.
+- **Stateful:** the test module itself is the `proper_statem` callback module (`initial_state/0`, `command/1`, `precondition/2`, `next_state/3`, `postcondition/3`, all public), and commands are `{:call, Module, :fun, args}`. A helper the commands call, such as `advance/1` for the clock, must be public too. See `templates/stateful_proper_test.exs`.
+- Use PropEr 1.4 or newer. PropEr 1.2 calls `erlang:get_stacktrace/0`, which Erlang/OTP 23 removed, so when a property raises it crashes instead of reporting the exception.
+
+**PropCheck** ([github.com/alfert/propcheck](https://github.com/alfert/propcheck), `{:propcheck, "~> 1.5", only: [:test, :dev]}`) wraps the same engine in Elixir macros: `use PropCheck`, then `property "name" do forall xs <- list(integer()) do ... end end`, with `let`, `such_that` and `when_fail`, and `PropCheck.StateM` for stateful tests. It reads better and keeps failing counterexamples between runs. No PropCheck template is included: it could not be installed where these templates were written (the package registry was not reachable), so a PropCheck version would be untested. The PropEr templates translate directly: `check(type, fn x -> ... end)` becomes `forall x <- type do ... end`.
+
 ## Contract file
 
-One file per module: `test/contracts/<module>_contract_test.exs`. Start from `templates/contract_test.exs`.
+One file per module: `test/contracts/<module>_contract_test.exs`. Start from `templates/contract_test.exs` (or the PropEr or standard-library variant, as chosen above).
 
 - Examples are plain `assert`s (or doctests for the simplest ones). Any `iex>` example in a `@doc` must be run: add `doctest MyModule` to a test file, or do not write the example.
 - Properties use `property` and `check all` from `ExUnitProperties`.

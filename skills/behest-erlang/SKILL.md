@@ -9,11 +9,13 @@ Follow `behest-contract-first` for the workflow. This skill covers the Erlang de
 
 ## Setup
 
-Contracts use EUnit plus PropEr. In `rebar.config`, make sure PropEr is available for tests (check the current version on hex.pm):
+Contracts use EUnit plus [PropEr](https://github.com/proper-testing/proper), for both plain properties (`?FORALL`) and stateful ones (`proper_statem`). In `rebar.config`, make sure PropEr is available for tests (1.5 is current on hex.pm):
 
 ```erlang
-{profiles, [{test, [{deps, [proper]}]}]}.
+{profiles, [{test, [{deps, [{proper, "1.5.0"}]}]}]}.
 ```
+
+Use PropEr 1.4 or newer: PropEr 1.2 calls `erlang:get_stacktrace/0`, which Erlang/OTP 23 removed, so a property that raises crashes PropEr instead of being reported. An Elixir project in the same team can use the same engine: see the PropEr templates in `behest-elixir`.
 
 Add `.behest-scratch/` to `.gitignore`; throwaway alternative implementations go there, outside `test/`, and are compiled from there for the disagreement check.
 
