@@ -1,11 +1,11 @@
 ---
 name: behest-contract-first
-description: "Contract-first workflow for Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell or OCaml code that a human will review. Use when asked to implement a function or module whose behavior could be read more than one way, or when the user mentions Behest, contract-first, examples-first, or \"ask before guessing\". Writes examples and properties first, asks about every unclear case, gets approval, then implements."
+description: "Contract-first workflow for Elixir, Erlang, Go, Rust, Python, Java, Julia, TypeScript, Kotlin, C#, Scala, Gleam, Clojure, Haskell or OCaml code that a human will review. Use when asked to implement a function or module whose behavior could be read more than one way, to write a contract for, audit or safely change existing code, or when the user mentions Behest, contract-first, examples-first, or \"ask before guessing\". Writes examples and properties first, asks about every unclear case, gets approval, then implements; for existing code, records what it does now and asks which surprising behaviour to keep or fix before changing it."
 ---
 
 # Behest contract-first workflow
 
-The human states the request. You build a **contract** (examples, properties, effects) with them, one concrete question at a time, and only then write the implementation. The contract is what the human reviews; the implementation is yours and may be regenerated at any time.
+The human states the request. You build a **contract** (examples, properties, effects) with them, one concrete question at a time, and only then write the implementation. The contract is what the human reviews; the implementation is yours and may be regenerated at any time. For code that already exists, follow [Existing code](#existing-code) instead of the steps for new code.
 
 Language details are in `behest-elixir`, `behest-erlang`, `behest-go`, `behest-rust`, `behest-python`, `behest-java`, `behest-julia`, `behest-typescript`, `behest-kotlin`, `behest-csharp`, `behest-scala`, `behest-gleam`, `behest-clojure`, `behest-haskell` and `behest-ocaml`. Use them together with this skill.
 
@@ -74,6 +74,38 @@ The numbers are the ones the tier table refers to. Skip the steps your tier leav
     - **Not pinned:** behaviour the contract does not fix, and anything left behind (a scratch directory, doc examples that are not run).
 
     Do not end with new questions unless one is a real **question** by the rule above.
+
+## Existing code
+
+Use these steps when the human asks you to write a contract for code that already exists, to audit it, or to change it safely. The order is reversed: the code exists, so the contract first records what it does now, and the human then decides what it *should* do. Tiers apply as for new code; in the light tier the contract is an ordinary test file and nothing is frozen.
+
+**Do not change the implementation before step E6**, not to fix a bug and not to tidy up. If you fix while you record, the contract describes the fixed code and the human never sees the old behaviour or decides on it.
+
+E1. **Scope.** Say in one sentence which module or functions the contract covers. If the request covers a whole program, propose one module to start with. Do not edit or delete the existing tests in this phase.
+
+E2. **Record the current behaviour** in a new contract file. Step 2 applies, with these differences:
+   - Every example's expected result comes from **running the current code**, never from reading it and predicting.
+   - Write the properties the code should satisfy and run them against the current code. A property that fails is not a mistake in the draft: its shrunk counterexample is a surprise for E3.
+   - If you write a reference model, write it from what the code is meant to do (its name, its docs, how callers use it), not by copying the code. Run the agreement property against the current code: each input where they differ is a surprise.
+   - Effects (standard and strict): start from `behest-effects: none` and run `scripts/effects.sh --declared <contract> <implementation files>`. Effects the code's purpose explains go into the effects line. Any other, such as a clock read in a parser or an ETS write in a function that looks pure, is a surprise.
+
+E3. **Look for more surprises:** behaviour that contradicts the docs or the existing tests, similar inputs treated differently (`""` and `" "`), an error raised in one case and returned in another, and the usual edges (empty, zero, negative, very large, invalid). In the standard and strict tiers, run the mutation check (step 10) on the current code against the existing tests plus your draft. Survivors show what nothing pins down yet.
+
+E4. **Record each point in `OPEN.md`** under the same two headings, stating the current behaviour:
+   - `## Questions`: `- [ ] today <case> -> <current result>: keep, or <other result>?`, with your proposal first. The proposal may be "keep".
+   - `## Defaults`: current behaviour you will keep without asking.
+
+   Sort them as in "The rule", with one change: **when unsure, the default is to keep the current behaviour**, because callers may depend on it. Behaviour that loses or corrupts data, or breaks a documented promise, is always a question. If an existing test asserts a behaviour you are asking about, say so in the question.
+
+E5. **Ask, fold in and freeze** as in steps 4 to 6: one message, with the current behaviour shown as cases. For each answer:
+   - **Keep:** the example records the current result and passes.
+   - **Fix:** the example records the wanted result and fails until E6. Mark it with a comment `fix: was <old result>`.
+
+   Before freezing, run the contract against the current code: every example marked `fix:` must fail and every other one must pass. Then approve it. Freezing a failing contract is intended here: it is the specification of the fix.
+
+E6. **Fix**, as a separate step and only what the human marked as a fix. Make the `fix:` examples pass while every other example stays green. If an existing test asserts the old behaviour of a case being fixed, update that test and list the change in the report; change no other existing test. If a fix would change a result the human chose to keep, stop and tell them, with the input. Removing an undeclared effect is also a fix. If nothing was marked as a fix, do not change the code.
+
+E7. **Check and report** as in steps 8 to 11, as far as your tier calls for them. In the report, add the heading **Behaviour changed** right after **Your answers**: each case whose result is different now, with the old and new result, and each existing test you changed.
 
 ## Enforcement
 

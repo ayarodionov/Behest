@@ -40,7 +40,7 @@ A short guide for the person using the skills, for new code and for [code you al
 
 ## Code you already have
 
-The skills also work on existing programs. Here the order is reversed: the code exists, and the contract records what it does, so you can decide what it *should* do. The real bugs found so far came from this, in two existing Elixir libraries ([elx_vast](https://github.com/ayarodionov/elx_vast) and [Exfoil](https://github.com/ayarodionov/exfoil)).
+The skills also work on existing programs, and `behest-contract-first` has its own steps for this case. Here the order is reversed: the code exists, and the contract records what it does, so you can decide what it *should* do. The real bugs found so far came from this, in two existing Elixir libraries ([elx_vast](https://github.com/ayarodionov/elx_vast) and [Exfoil](https://github.com/ayarodionov/exfoil)).
 
 **1. Pick one module or function and start from a clean working tree.** Good first choices: code that is about to change, code with few tests, or code whose behaviour people disagree about. Do not start with the whole program.
 
@@ -56,7 +56,7 @@ The skills also work on existing programs. Here the order is reversed: the code 
 **4. You decide each surprising case.** You get the same single message as for new code, but each question now reads "today `parse("")` returns `nil`: keep it, or should it be `{:error, :empty}`?"
 
 - **Rule to keep:** the example records the current behaviour and passes.
-- **Bug:** the example records the behaviour you want, and fails for now.
+- **Bug:** the example records the behaviour you want, marked with a comment such as `fix: was nil`, and fails for now.
 
 Callers may already depend on odd behaviour, so "keep" is often the right answer. The point is that it becomes a choice someone made on purpose.
 

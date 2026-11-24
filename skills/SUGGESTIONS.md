@@ -4,7 +4,7 @@ Concrete improvements to the skills, scripts and templates in this folder, colle
 
 Most items come from watching 36 agent runs follow the skills in the [experiment](../experiment/results/README.md), and from building the examples.
 
-**Done since this list was written:** 1, 2, 3 and 4 (see the last entries of [STATUS.md](STATUS.md)). Next in line: 5 and 6.
+**Done since this list was written:** 1, 2, 3 and 4 (see the last entries of [STATUS.md](STATUS.md)), and 7 except its worked example. Next in line: 5 and 6.
 
 ## A. Fixes the agent runs pointed to
 
@@ -46,11 +46,12 @@ Most items come from watching 36 agent runs follow the skills in the [experiment
 
 ## B. Gaps in what the skills cover
 
-### 7. A workflow for existing code
+### 7. A workflow for existing code (done, except the worked example)
 
 - **Why:** the real bugs found so far were in existing libraries, but the skills give that case one paragraph.
 - **Do:** a section (or its own skill) with the steps: record what the code does now as a draft contract; list every behaviour that looks surprising as a question ("bug, or a rule to keep?"); only then change code.
 - **Work:** medium, with one worked example.
+- **Done:** steps E1 to E7 in [`behest-contract-first`](behest-contract-first/SKILL.md#existing-code), and a section in the [tutorial](TUTORIAL.md#code-you-already-have). Still to do: a worked example project, and an agent run that follows the steps.
 
 ### 8. Reference-model and stateful templates beyond Erlang and Elixir
 
