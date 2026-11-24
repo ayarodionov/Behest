@@ -23,7 +23,7 @@ The same idea as the [Behest language](../README.md), delivered as Claude skills
 
 Use `behest-contract-first` together with the one for your language.
 
-- **[Tutorial](TUTORIAL.md):** a short first session and best practice. Start here.
+- **[Tutorial](TUTORIAL.md):** a short first session, how to use the skills on code you already have, and best practice. Start here.
 - **[Walkthrough](WALKTHROUGH.md):** a full session building `median`, with the real output of every command.
 - **[Examples](examples/):** finished Erlang, Elixir, Go, Rust, Python and Java projects you can run, including a `gen_server` with a stateful contract.
 - **[Experiment](../experiment/):** runs comparing the skills with a plain prompt, with results and limits.

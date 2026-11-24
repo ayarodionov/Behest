@@ -1,6 +1,6 @@
 # Tutorial: your first session, and best practice
 
-A short guide for the person using the skills. The [walkthrough](WALKTHROUGH.md) shows a full session with the real output of every command; this page is the version to read first.
+A short guide for the person using the skills, for new code and for [code you already have](#code-you-already-have). The [walkthrough](WALKTHROUGH.md) shows a full session with the real output of every command; this page is the version to read first.
 
 ## Before you start (once per project)
 
@@ -38,13 +38,44 @@ A short guide for the person using the skills. The [walkthrough](WALKTHROUGH.md)
 
 **5. Read the report.** It always has the same headings: *Your answers*, *Defaults*, *Pinned without asking*, *Checks*, *Not pinned*. The last two you have not seen before, so read them.
 
+## Code you already have
+
+The skills also work on existing programs. Here the order is reversed: the code exists, and the contract records what it does, so you can decide what it *should* do. The real bugs found so far came from this, in two existing Elixir libraries ([elx_vast](https://github.com/ayarodionov/elx_vast) and [Exfoil](https://github.com/ayarodionov/exfoil)).
+
+**1. Pick one module or function and start from a clean working tree.** Good first choices: code that is about to change, code with few tests, or code whose behaviour people disagree about. Do not start with the whole program.
+
+**2. Ask Claude to record the code before changing it.**
+
+> Use the Behest contract-first workflow on the existing `Parser.parse/1` in `lib/parser.ex`. Do not change the code yet. Write a contract that records what it does now: examples, properties and effects. Put every behaviour that looks surprising in `OPEN.md` as a question: bug to fix, or rule to keep?
+
+**3. Claude reads the code and probes it.** It writes examples for the normal cases and properties for the general rules, then looks for the surprising cases. Two checks are especially useful here:
+
+- **Disagreement check:** the existing code is one side, and a plain reference model or a second implementation is the other. Each input where they differ is either a bug or a case nobody decided.
+- **Effect scan:** declare what the code is supposed to touch and run `effects.sh`. An effect you did not expect, such as a clock read or a write to ETS, is a finding in itself.
+
+**4. You decide each surprising case.** You get the same single message as for new code, but each question now reads "today `parse("")` returns `nil`: keep it, or should it be `{:error, :empty}`?"
+
+- **Rule to keep:** the example records the current behaviour and passes.
+- **Bug:** the example records the behaviour you want, and fails for now.
+
+Callers may already depend on odd behaviour, so "keep" is often the right answer. The point is that it becomes a choice someone made on purpose.
+
+**5. Freeze the contract, then fix.** Approve the contract first. Fixing the bugs is a separate step: Claude makes the failing examples pass without touching the frozen contract, and every other recorded behaviour stays as it was. From then on the contract guards the code against regressions, whoever changes it next.
+
+Some tips:
+
+- **Keep recording and fixing apart.** If Claude fixes things while it records them, the contract describes the fixed code and you never get to see the old behaviour or decide on it.
+- **Keep your existing tests.** The contract comes in addition to them, not instead.
+- **Run the mutation check on the old code.** It shows how much of the code the contract (and your old tests) actually pins down, before anyone changes it.
+- **Less tested than new code.** The experiment only measured new functions. For existing code the evidence is the two libraries above.
+
 ## Best practice
 
 ### When you ask
 
 - **Let Claude pick the tier, then check its choice.** It says which tier and why in its first message, and you can change it. Use **light** for code that is cheap to redo: in the experiment it got 26 of 26 decisions right at the same agent time as a plain prompt. Ask for **strict** for money, security, data loss, concurrency or an API that cannot change later.
 - **Skip the skills when the obvious answer is the one you want.** On ordinary tasks a plain prompt got 63 of 69 decisions right, at about a fifth of the cost. The skills pay off when you want something unusual: there a plain prompt missed choices it never mentioned (46 of 52, against 52 of 52).
-- **Use it on existing code too.** Ask for a contract for a function you already have, with surprising cases listed in `OPEN.md` before anything changes. For each one, decide whether it is a bug to fix or a rule to keep. This found real bugs in two existing Elixir libraries.
+- **Use it on existing code too.** Record what the code does, decide each surprising case, then fix ([above](#code-you-already-have)).
 
 ### When you answer
 
